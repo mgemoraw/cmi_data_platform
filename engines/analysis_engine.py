@@ -145,6 +145,61 @@ class AnalysisEngine:
         self.progress_callback = progress_callback
         self.output_folder.mkdir(exist_ok=True)
 
+    def get_target_cells(self):
+        # 1. Define the structural master registry for all your fleet types
+        EQUIPMENT_REGISTRY = {
+            'dozer': {
+                'productivity': "N",
+                'ideal_productivity': "O",
+                'overall_method_productivity': "P",
+                'ideal_cycle_variability': "Q",
+                'overall_cycle_variability': "R",
+            },
+            'excavator': {
+                'productivity': "O",
+                'ideal_productivity': "P",
+                'overall_method_productivity': "Q",
+                'ideal_cycle_variability': "R",
+                'overall_cycle_variability': "S",
+            },
+            'truck': {
+                'productivity': "O",
+                'ideal_productivity': "P",
+                'overall_method_productivity': "Q",
+                'ideal_cycle_variability': "R",
+                'overall_cycle_variability': "S",
+            },
+            'grader': {
+                'productivity': "N",
+                'ideal_productivity': "O",
+                'overall_method_productivity': "P",
+                'ideal_cycle_variability': "Q",
+                'overall_cycle_variability': "R",
+            }, 
+
+            'roller': {
+                'productivity': "N",
+                'ideal_productivity': "O",
+                'overall_method_productivity': "P",
+                'ideal_cycle_variability': "Q",
+                'overall_cycle_variability': "R",
+            }
+            # Easily add 'roller', 'truck', 'labor' column rules here!
+        }
+
+        # 2. Establish a strict fallback configuration to prevent index key errors
+        DEFAULT_MAPPING = {
+            'productivity': "N", 
+            'ideal_productivity': "O", 
+            'overall_method_productivity': "P", 
+            'ideal_cycle_variability': "Q", 
+            'overall_cycle_variability': "R"
+        }
+
+        # 3. Retrieve matching block or seamlessly fall back to default
+        return EQUIPMENT_REGISTRY.get(self.equipment.lower(), DEFAULT_MAPPING)
+    
+
     def _log(self, text):
         if self.logger:
             self.logger(text)
@@ -171,6 +226,60 @@ class AnalysisEngine:
             excel.Quit()
         except Exception as e:
             self._log(f"⚠️ COM Connection Notice (Refresh): {e}")
+    
+    # NEW: Pre-Analysis Structural Integrity Checking Function
+    def run_preanalysis_check(self, file_path, equipment_sheet_name, mpdm_sheet_name="MPDM"):
+        """
+        Cross-checks cycle time arrays between equipment spec sheets and MPDM master layouts.
+        Generates an active workspace mismatch log summary file if errors are caught.
+        """
+        log_entries = []
+        wb = load_workbook(filename=file_path, data_only=True)
+        
+        if equipment_sheet_name not in wb.sheetnames or mpdm_sheet_name not in wb.sheetnames:
+            wb.close()
+            return f"❌ Missing required evaluation logs sheet nodes in workbook. Expected: '{equipment_sheet_name}' and '{mpdm_sheet_name}'"
+
+        eq_ws = wb[equipment_sheet_name]
+        mpdm_ws = wb[mpdm_sheet_name]
+        
+        # Identify standard cycle data index target tracking column configurations
+        cells_map = self.get_target_cells()
+        cycle_col = cells_map.get('productivity', 'N') 
+
+        # Evaluate matrix loops matching standard calculation rows bounds (11 to 111)
+        for row in range(11, 112):
+            eq_val = eq_ws[f"{cycle_col}{row}"].value
+            mpdm_val = mpdm_ws[f"{cycle_col}{row}"].value
+
+            # Convert types safely to bypass precision or formatting differences
+            try:
+                eq_num = float(eq_val) if eq_val is not None else None
+                mpdm_num = float(mpdm_val) if mpdm_val is not None else None
+            except (ValueError, TypeError):
+                eq_num, mpdm_num = eq_val, mpdm_val
+
+            if eq_num != mpdm_num:
+                log_entries.append(
+                    f"Row {row:03d} -> Deviation Found! Sheet '{equipment_sheet_name}': {eq_val} | Sheet 'MPDM': {mpdm_val}"
+                )
+
+        wb.close()
+
+        if log_entries:
+            log_filename = self.output_folder / f"PreAnalysis_Mismatch_Log_{Path(file_path).stem}.txt"
+            with open(log_filename, "w", encoding="utf-8") as log_file:
+                log_file.write(f"=== CMI PROCESS STRUCTURAL MISMATCH AUDIT RECORD ===\n")
+                log_file.write(f"Target Source Workbook: {Path(file_path).name}\n")
+                log_file.write(f"Timestamp Verified: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+                log_file.write(f"Assigned Equipment Parameter Group: {self.equipment}\n")
+                log_file.write(f"Discovered Discrepancies Count: {len(log_entries)}\n")
+                log_file.write("-" * 75 + "\n\n")
+                log_file.write("\n".join(log_entries))
+            
+            return f"⚠️ Discovered {len(log_entries)} cycle deviations. Written to: {log_filename.name}"
+        
+        return "✔ Matrix Validation Passed. Uniform correlation matches found across target ranges."
 
     def run(self):
         self._log("🏁 Starting Analysis Engine Aggregation...")
@@ -199,6 +308,12 @@ class AnalysisEngine:
                     sheet_name = self.equipment.title()
                 else:
                     sheet_name = f'{self.equipment.title()}1'
+                
+
+                # Execute dynamic pre-analysis sheet audit checklist
+                self._log(f"🔬 Auditing validation synchronization matches for: {file}")
+                audit_summary = self.run_preanalysis_check(full_path, sheet_name, "MPDM")
+                self._log(f"[PRE-ANALYSIS]: {audit_summary}")
 
                 if sheet_name not in wb.sheetnames:
                     self._log(f"⚠️ Target sheet layout segment '{sheet_name}' missing inside workbook {file}. Skipping.")
