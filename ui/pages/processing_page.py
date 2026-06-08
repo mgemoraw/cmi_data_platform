@@ -2,14 +2,19 @@ import os
 import sys
 import subprocess
 from datetime import datetime
+from pathlib import Path
 from PySide6.QtWidgets import (
-    QWidget, QLabel, QVBoxLayout, QHBoxLayout, QGridLayout,
-    QFormLayout, QPushButton, QFileDialog, QLineEdit, QComboBox,
-    QProgressBar, QTextEdit, QListWidget, QTableWidget, QTableWidgetItem,
-    QHeaderView, QMenu
+    QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFormLayout, 
+    QPushButton, QFileDialog, QLineEdit, QComboBox, QProgressBar, 
+    QTextEdit, QListWidget, QMenu
 )
 from PySide6.QtCore import Qt, QThread, Signal
 from openpyxl import load_workbook
+
+# Note: Ensure the required win32com import remains available if running on Windows platforms
+if sys.platform == "win32":
+    import win32com.client as win32
+
 
 # =====================================================================
 # SYSTEM COMMUNICATIONS CORE THREADS
@@ -70,7 +75,7 @@ class Worker(QThread):
 
 
 # =====================================================================
-# INTEGRATED PAGE VIEW 3: DATA PROCESSING & PIPELINES TOOL PAGE
+# INTEGRATED PAGE VIEW: DATA PROCESSING & PIPELINES TOOL PAGE
 # =====================================================================
 class ProcessingPage(QWidget):
     def __init__(self):
@@ -92,12 +97,13 @@ class ProcessingPage(QWidget):
             "Excel File Splitting",
             "File Renaming (Date Match/G4 Extraction)",
             "Data Aggregation & Template Counter",
-            "Clean Data"
+            "Clean Data",
+            "Data Analysis Engine"  # Added previous analysis engine capability hook option here
         ])
         self.task_selector.currentIndexChanged.connect(self.toggle_inputs)
         form.addRow("Select Pipeline Task Engine:", self.task_selector)
 
-        # --- ADDED/RETAINED INPUT FOLDER FIELD SELECTION ---
+        # Source Input Folder Field Selection
         in_widget = QWidget()
         in_lay = QHBoxLayout(in_widget)
         in_lay.setContentsMargins(0, 0, 0, 0)
@@ -142,6 +148,17 @@ class ProcessingPage(QWidget):
         t_lay.addWidget(btn_temp)
         self.template_lbl = QLabel("Baseline Validation Template File:")
         form.addRow(self.template_lbl, self.template_widget)
+
+        # --- Dynamic Analysis Specific Custom Row Form Parameters ---
+        self.particular_field = QLineEdit()
+        self.particular_field.setPlaceholderText("e.g., Site Clearing using Dozer")
+        self.particular_lbl = QLabel("Analysis Particular Work Item:")
+        form.addRow(self.particular_lbl, self.particular_field)
+
+        self.activity_field = QLineEdit()
+        self.activity_field.setPlaceholderText("e.g., Site clearing operations")
+        self.activity_lbl = QLabel("Analysis Activity Process Title:")
+        form.addRow(self.activity_lbl, self.activity_field)
 
         left_layout.addLayout(form)
 
@@ -197,25 +214,21 @@ class ProcessingPage(QWidget):
         self.toggle_inputs()
 
     def sync_workspace(self, path):
-        """Called automatically when user changes the directory on ExplorerPage."""
         self.active_workspace_path = path
-        self.input_path.setText(path)  # Dynamically fills the field
+        self.input_path.setText(path)
         self.refresh_file_list(path)
 
     def select_input_folder(self):
-        """Manual overrides for the input folder target path configuration."""
         f = QFileDialog.getExistingDirectory(self, "Select Active Source Input Directory")
         if f:
             self.input_path.setText(f)
 
     def handle_manual_input_path(self, path):
-        """Syncs workspace path properties if changed manually inside the line field."""
         self.active_workspace_path = path
         self.refresh_file_list(path)
         self.update_output_defaults()
 
     def refresh_file_list(self, path):
-        """Cleans and re-reads target path elements cleanly."""
         self.file_list.clear()
         if os.path.exists(path) and os.path.isdir(path):
             try:
@@ -230,14 +243,15 @@ class ProcessingPage(QWidget):
     def update_output_defaults(self):
         if not self.active_workspace_path: return
         idx = self.task_selector.currentIndex()
-        suffixes = {0: "split_data_files", 1: "renamed_files", 2: "collected_data", 3: "cleaned_data"}
+        suffixes = {0: "split_data_files", 1: "renamed_files", 2: "collected_data", 3: "cleaned_data", 4: "output"}
         self.output_path.setText(os.path.join(self.active_workspace_path, suffixes.get(idx, "")))
 
     def toggle_inputs(self):
         idx = self.task_selector.currentIndex()
         is_split = idx == 0
         needs_temp = idx in [2, 3]
-        needs_equip = idx in [0, 2, 3]
+        needs_equip = idx in [0, 2, 3, 4] # Enabled option index 4 profile
+        is_analysis = idx == 4
 
         self.equipment.setVisible(needs_equip)
         self.equipment_lbl.setVisible(needs_equip)
@@ -245,6 +259,12 @@ class ProcessingPage(QWidget):
         self.chunk_lbl.setVisible(is_split)
         self.template_widget.setVisible(needs_temp)
         self.template_lbl.setVisible(needs_temp)
+        
+        # Display analysis inputs only if option 4 is selected
+        self.particular_field.setVisible(is_analysis)
+        self.particular_lbl.setVisible(is_analysis)
+        self.activity_field.setVisible(is_analysis)
+        self.activity_lbl.setVisible(is_analysis)
         
         self.update_output_defaults()
 
@@ -297,9 +317,10 @@ class ProcessingPage(QWidget):
 
     def execute_pipeline(self):
         idx = self.task_selector.currentIndex()
-        inf = self.input_path.text()  # Uses the text value directly from our text box field
+        inf = self.input_path.text()
         outf = self.output_path.text()
         self.progress.setValue(0)
+        
         if not inf or not outf: 
             self.log.append("❌ Core Pipeline Error: Directory workspace paths targets cannot be left blank.")
             return
@@ -324,11 +345,29 @@ class ProcessingPage(QWidget):
             if not tpl or not os.path.exists(tpl): return
             from engines.cleaning_engine import DataCleaningEngine
             self.engine = DataCleaningEngine({'input_folder': inf, 'output_folder': outf, 'template_path': tpl, 'logger': self.log.append, 'progress_callback': self.progress.setValue})
+        elif idx == 4:
+            # Instantiating the integrated AnalysisEngine option dynamically
+            from engines.analysis_engine import AnalysisEngine
+            part = self.particular_field.text().strip()
+            actv = self.activity_field.text().strip()
+            
+            self.engine = AnalysisEngine(
+                data_folder=inf,
+                template_path=None, # Passing None as defined in AnalysisEngine init defaults
+                equipment=self.equipment.currentText().lower(),
+                particular=part if part else None,
+                activity=actv if actv else None,
+                logger=self.log.append,
+                progress_callback=self.progress.setValue
+            )
 
         self.w = Worker(self.engine)
         self.w.log_signal.connect(self.log.append)
         self.w.progress_signal.connect(self.progress.setValue)
-        self.w.finished_signal.connect(lambda: [self.log.append("✅ Operational Run Completed System Run Pipeline Executed Successfully!"), self.refresh_file_list(self.input_path.text())])
+        self.w.finished_signal.connect(lambda: [
+            self.log.append("✅ Operational Run Completed System Run Pipeline Executed Successfully!"), 
+            self.refresh_file_list(self.input_path.text())
+        ])
         self.w.start()
 
     def open_output(self):

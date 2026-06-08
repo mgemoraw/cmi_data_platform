@@ -1,29 +1,48 @@
 import os
+import sys
 import pandas as pd
 from PySide6.QtWidgets import (
     QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFormLayout, 
     QPushButton, QFileDialog, QLineEdit, QListWidget, QTableWidget, 
-    QTableWidgetItem, QHeaderView, QSplitter
+    QTableWidgetItem, QHeaderView, QSplitter, QComboBox
 )
 from PySide6.QtCore import Qt, QThread, Signal
 
 
 class ExcelPreviewWorker(QThread):
-    """Asynchronously reads the first few rows of an Excel file to keep the UI buttery smooth."""
+    """
+    Asynchronously reads target sheets or files entirely, preventing UI lockups
+    while scaling to hold the complete dataset grid layout frame.
+    """
     preview_ready = Signal(list, list)  # Carries (columns, row_data)
+    sheets_located = Signal(list)       # Carries discovered worksheet tab strings
     error_occurred = Signal(str)
 
-    def __init__(self, file_path, num_rows=15):
+    def __init__(self, file_path, sheet_name=None, check_sheets_only=False):
         super().__init__()
         self.file_path = file_path
-        self.num_rows = num_rows
+        self.sheet_name = sheet_name
+        self.check_sheets_only = check_sheets_only
 
     def run(self):
         try:
-            # Read only the header and top rows to optimize speed and memory footprint
-            df = pd.read_excel(self.file_path, nrows=self.num_rows)
-            
-            # Clean up NaN values for clean visual display presentation
+            # Step A: Check Sheet Layout Structures on Excel types
+            if self.file_path.lower().endswith(('.xlsx', '.xls')):
+                xl = pd.ExcelFile(self.file_path)
+                sheets = xl.sheet_names
+                self.sheets_located.emit(sheets)
+                
+                if self.check_sheets_only:
+                    return
+                
+                # Default selection to first index if none is actively provided
+                target_sheet = self.sheet_name if self.sheet_name else sheets[0]
+                df = pd.read_excel(xl, sheet_name=target_sheet)
+            else:
+                # Fallback implementation directly streaming raw CSV matrix schemas
+                df = pd.read_csv(self.file_path)
+
+            # Clean up NaN null configurations before passing text payloads back
             df = df.fillna("")
             
             columns = [str(col) for col in df.columns]
@@ -40,6 +59,7 @@ class ExplorerPage(QWidget):
     def __init__(self):
         super().__init__()
         self.current_dir = ""
+        self.active_file_path = ""
         self.preview_worker = None
         self.init_ui()
 
@@ -49,7 +69,7 @@ class ExplorerPage(QWidget):
         main_layout.setSpacing(16)
 
         # =====================================================================
-        # HEADER HEADER SECTION
+        # HEADER SECTION
         # =====================================================================
         title = QLabel("Project Workspace Configuration")
         title.setStyleSheet("color: #0f172a; font-size: 22px; font-weight: 700;")
@@ -63,10 +83,27 @@ class ExplorerPage(QWidget):
         form = QFormLayout()
         form.setContentsMargins(0, 0, 0, 10)
         
+        path_input_layout = QHBoxLayout()
         self.path_display = QLineEdit()
         self.path_display.setPlaceholderText("Select your project file root directory...")
         self.path_display.setReadOnly(True)
         self.path_display.setStyleSheet("padding: 8px; font-size: 13px; background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 6px;")
+
+        # Added combo box dropdown matrix selector asset hook
+        self.sheet_combo = QComboBox()
+        self.sheet_combo.setPlaceholderText("Target Sheet Layout")
+        self.sheet_combo.setEnabled(False)
+        self.sheet_combo.currentIndexChanged.connect(self.handle_sheet_combobox_changed)
+        self.sheet_combo.setStyleSheet("""
+            QComboBox {
+                padding: 6px 12px; font-size: 13px; background-color: #ffffff; 
+                border: 1px solid #cbd5e1; border-radius: 6px; min-width: 160px;
+            }
+            QComboBox:disabled { background-color: #f1f5f9; color: #94a3b8; }
+        """)
+
+        path_input_layout.addWidget(self.path_display, stretch=1)
+        path_input_layout.addWidget(self.sheet_combo)
 
         btn_browse = QPushButton("📁 Browse Workspace")
         btn_browse.clicked.connect(self.browse_folder)
@@ -78,7 +115,7 @@ class ExplorerPage(QWidget):
             QPushButton:hover { background-color: #1d4ed8; }
         """)
 
-        form.addRow("Active Workspace Directory:", self.path_display)
+        form.addRow("Active Workspace Directory:", path_input_layout)
         form.addRow("", btn_browse)
         main_layout.addLayout(form)
 
@@ -98,6 +135,10 @@ class ExplorerPage(QWidget):
         
         self.file_list = QListWidget()
         self.file_list.itemSelectionChanged.connect(self.handle_file_selection)
+        
+        # Connect item double clicked directly to trigger operational system launcher
+        self.file_list.itemDoubleClicked.connect(self.handle_file_double_click)
+        
         self.file_list.setStyleSheet("""
             QListWidget {
                 background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 4px;
@@ -129,6 +170,11 @@ class ExplorerPage(QWidget):
         self.preview_table.setAlternatingRowColors(True)
         self.preview_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.preview_table.setVisible(False)  # Hidden initially until loaded
+        
+        # Enable complete data row matrix scrolling configurations
+        self.preview_table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.preview_table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        
         self.preview_table.setStyleSheet("""
             QTableWidget {
                 background-color: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; gridline-color: #f1f5f9;
@@ -160,6 +206,8 @@ class ExplorerPage(QWidget):
 
     def refresh_file_list(self):
         self.file_list.clear()
+        self.sheet_combo.clear()
+        self.sheet_combo.setEnabled(False)
         self.clear_preview("Select an asset sheet item from the left file tracker pane to run an instant preview.")
         
         if not self.current_dir or not os.path.exists(self.current_dir):
@@ -182,25 +230,64 @@ class ExplorerPage(QWidget):
             return
 
         filename_raw = selected_items[0].text()
-        # Filter item string out away from design leading emoji tags
         filename = filename_raw[3:].strip() if filename_raw.startswith(("📊", "📄", "⚠")) else filename_raw
         
         if "No compatible dataset sheets found" in filename or "Reading Exception" in filename:
             self.clear_preview("No active file layout targeted.")
             return
 
-        file_path = os.path.join(self.current_dir, filename)
+        self.active_file_path = os.path.join(self.current_dir, filename)
         
         # UI Feedback during parsing
         self.preview_table.setVisible(False)
         self.status_hint.setVisible(True)
-        self.status_hint.setText(f"⏳ Reading row matrix schemas from {filename}...")
+        self.status_hint.setText(f"⏳ Reading complete matrix metadata from {filename}...")
 
-        # Fire off background worker thread to parse the data safely
-        self.preview_worker = ExcelPreviewWorker(file_path)
+        # Fire worker to pull both data and sheet list tabs
+        self.run_preview_worker(self.active_file_path)
+
+    def handle_sheet_combobox_changed(self, index):
+        """Triggered when the user switches targeted sheets within the top ComboBox."""
+        if index < 0 or not self.active_file_path:
+            return
+            
+        selected_sheet = self.sheet_combo.itemText(index)
+        
+        self.preview_table.setVisible(False)
+        self.status_hint.setVisible(True)
+        self.status_hint.setText(f"⏳ Switching sheet grid allocation target to '{selected_sheet}'...")
+        
+        # Re-run background processing scoped specifically to the user's targeted workbook tab
+        self.run_preview_worker(self.active_file_path, sheet_name=selected_sheet)
+
+    def run_preview_worker(self, file_path, sheet_name=None):
+        """Dispatches automated worker operations cleanly across processing cycles."""
+        if self.preview_worker and self.preview_worker.isRunning():
+            self.preview_worker.terminate()
+            self.preview_worker.wait()
+
+        self.preview_worker = ExcelPreviewWorker(file_path, sheet_name=sheet_name)
         self.preview_worker.preview_ready.connect(self.populate_preview_table)
+        self.preview_worker.sheets_located.connect(self.populate_sheet_selector)
         self.preview_worker.error_occurred.connect(lambda err: self.clear_preview(f"❌ Failed to parse data: {err}"))
         self.preview_worker.start()
+
+    def populate_sheet_selector(self, sheets):
+        """Safely hydrates the top target sheets selection menu elements."""
+        self.sheet_combo.blockSignals(True)  # Block signals temporarily to prevent recursive event loop firing
+        current_selection = self.sheet_combo.currentText()
+        
+        self.sheet_combo.clear()
+        if sheets:
+            self.sheet_combo.addItems(sheets)
+            self.sheet_combo.setEnabled(True)
+            
+            # Keep index pointer consistent if the previous choice still exists inside the updated framework
+            if current_selection in sheets:
+                self.sheet_combo.setCurrentText(current_selection)
+        else:
+            self.sheet_combo.setEnabled(False)
+        self.sheet_combo.blockSignals(False)
 
     def populate_preview_table(self, columns, row_data):
         self.status_hint.setVisible(False)
@@ -220,6 +307,29 @@ class ExplorerPage(QWidget):
             for col_idx, value in enumerate(row_values):
                 item = QTableWidgetItem(str(value))
                 self.preview_table.setItem(row_idx, col_idx, item)
+
+    def handle_file_double_click(self, item):
+        """Natively executes and launches targeted documents directly inside the system's default office suite app."""
+        filename_raw = item.text()
+        filename = filename_raw[3:].strip() if filename_raw.startswith(("📊", "📄", "⚠")) else filename_raw
+        
+        if "No compatible dataset sheets found" in filename or "Reading Exception" in filename:
+            return
+
+        target_path = os.path.join(self.current_dir, filename)
+        
+        if os.path.exists(target_path):
+            try:
+                if sys.platform == "win32":
+                    os.startfile(target_path)
+                elif sys.platform == "darwin":  # macOS support profile boundary handling
+                    import subprocess
+                    subprocess.call(["open", target_path])
+                else:  # Linux profile standard compliance fallback mappings
+                    import subprocess
+                    subprocess.call(["xdg-open", target_path])
+            except Exception as e:
+                self.clear_preview(f"❌ Failed opening file natively via platform engine: {str(e)}")
 
     def clear_preview(self, text_message):
         self.preview_table.setVisible(False)
