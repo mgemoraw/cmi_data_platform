@@ -98,7 +98,8 @@ class ProcessingPage(QWidget):
             "File Renaming (Date Match/G4 Extraction)",
             "Data Aggregation & Template Counter",
             "Clean Data",
-            "Data Analysis Engine"  # Added previous analysis engine capability hook option here
+            "Data Analysis Engine",  # Added previous analysis engine capability hook option here
+            "Cycle Time Cross-Validation"
         ])
         self.task_selector.currentIndexChanged.connect(self.toggle_inputs)
         form.addRow("Select Pipeline Task Engine:", self.task_selector)
@@ -243,14 +244,14 @@ class ProcessingPage(QWidget):
     def update_output_defaults(self):
         if not self.active_workspace_path: return
         idx = self.task_selector.currentIndex()
-        suffixes = {0: "split_data_files", 1: "renamed_files", 2: "collected_data", 3: "cleaned_data", 4: "output"}
+        suffixes = {0: "split_data_files", 1: "renamed_files", 2: "collected_data", 3: "cleaned_data", 4: "output", 5: "validation_logs"}
         self.output_path.setText(os.path.join(self.active_workspace_path, suffixes.get(idx, "")))
 
     def toggle_inputs(self):
         idx = self.task_selector.currentIndex()
         is_split = idx == 0
         needs_temp = idx in [2, 3]
-        needs_equip = idx in [0, 2, 3, 4] # Enabled option index 4 profile
+        needs_equip = idx in [0, 2, 3, 4,5] # Enabled option index 4 profile
         is_analysis = idx == 4
 
         self.equipment.setVisible(needs_equip)
@@ -359,6 +360,14 @@ class ProcessingPage(QWidget):
                 activity=actv if actv else None,
                 logger=self.log.append,
                 progress_callback=self.progress.setValue
+            )
+        elif idx == 5:
+            # Instantiating the newly created ValidationEngine configuration
+            from engines.validation_engine import ValidationEngine
+            self.engine = ValidationEngine(
+                input_folder=inf,
+                equipment=self.equipment.currentText().lower(),
+                logger=self.log.append
             )
 
         self.w = Worker(self.engine)
