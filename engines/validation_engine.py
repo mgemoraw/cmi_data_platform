@@ -3,14 +3,19 @@ import os
 from pathlib import Path
 from openpyxl import load_workbook
 from .validation_mappings import COLUMN_MAPPINGS
+from typing import Optional 
+
+
 
 class ValidationEngine:
-    def __init__(self, input_folder=None, equipment=None, logger=print, progress_callback=None):
+    def __init__(self, input_folder=None, equipment=None, logger=print, progress_callback=None, actions: Optional[dict]=None):
         self.source_path = Path(input_folder) if input_folder else Path.cwd()
         self.equipment = equipment.lower().strip() if equipment else None
         self.logger = logger
         self.progress_callback = None # Will be bound by Worker thread dynamically
+        self.actions = actions
 
+                
     def log(self, message):
         self.logger(message)
 
@@ -33,7 +38,31 @@ class ValidationEngine:
 
         return (None, None)
 
-    
+    def _validate(self):
+        match self.actions["mode"]:
+            case "check_only":
+                self.perform_validation()
+
+            case "check_and_update":
+                self.perform_validation_and_update(
+                    source_sheet=self.actions['source']
+                )
+
+    def _perform_validation(self, file_path):
+        try:
+            pass
+        except Exception as e:
+            pass 
+
+    def _perform_validation_and_update(self, file_path, source_sheet="equipment"):
+        try:
+            pass
+        except Exception as e:
+            pass 
+
+    def _perform_cycle_time_update(self, ):
+        pass 
+
     def read_excel_contents(self):
         """
         Main runner target called by your PySide6 QThread Worker.
@@ -73,7 +102,8 @@ class ValidationEngine:
             try:
                 # Load workbook with data_only=True to evaluate equations/formulas to final numerical values
                 # wb = load_workbook(file_path, data_only=True)
-                wb = load_workbook(file_path,)
+                data_only= self.actions['mode']=="check_only"
+                wb = load_workbook(file_path, data_only=data_only)
                 equipment_sheet_name, mpdm_sheet_name = self.get_target_worksheets(wb.sheetnames)
                 
                 # if equipment_sheet_name not in wb.sheetnames:
@@ -132,16 +162,19 @@ class ValidationEngine:
 
                         # populating equipment cycle time to mpdm
                         # self.populate_mpdm_cell(file_path, mpdm_sheet_name, row+row_diff, equip_num)
-                        self.log(f" .... updating mpdm cell {row+row_diff}")
-                        source_cell = f"{equip_cycle_col}{row}"
-                        target_cell = f"{mpdm_cycle_col}{row+row_diff}"
+                        if self.actions['mode'] == "check_only":
+                            pass 
+                        else:
+                            self.log(f" .... updating mpdm cell {row+row_diff}")
+                            source_cell = f"{equip_cycle_col}{row}"
+                            target_cell = f"{mpdm_cycle_col}{row+row_diff}"
 
-                        mpdm_ws[target_cell] = equip_ws[source_cell].value
-                        self.log(f" >>>>>>> Cell {mpdm_cycle_col}{row+row_diff} Updated! <<<<<<<<")
+                            mpdm_ws[target_cell] = equip_ws[source_cell].value
+                            self.log(f" >>>>>>> Cell {mpdm_cycle_col}{row+row_diff} Updated! <<<<<<<<")
 
-                        # save updated file
-                        wb.save(file_path)
-                        self.log(f" file {file_name} saved successfully ")
+                            # save updated file
+                            wb.save(file_path)
+                            self.log(f" file {file_name} saved successfully ")
 
 
                 wb.close()

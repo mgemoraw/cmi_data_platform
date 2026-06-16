@@ -4,9 +4,9 @@ import subprocess
 from datetime import datetime
 from pathlib import Path
 from PySide6.QtWidgets import (
-    QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFormLayout, 
+    QButtonGroup, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QFormLayout, 
     QPushButton, QFileDialog, QLineEdit, QComboBox, QProgressBar, 
-    QTextEdit, QListWidget, QMenu
+    QTextEdit, QListWidget, QMenu, QCheckBox, QRadioButton
 )
 from PySide6.QtCore import Qt, QThread, Signal
 from openpyxl import load_workbook
@@ -130,9 +130,49 @@ class ProcessingPage(QWidget):
 
         # Multi-parameters Options
         self.equipment = QComboBox()
-        self.equipment.addItems(["Excavator", "Dozer", "Loader", "Grader", "Roller", "Truck", "Labor"])
+        self.equipment.addItems(["Excavator", "Dozer", "Loader", "Motor Grader", "Roller", "Truck", "Labor"])
         self.equipment_lbl = QLabel("Equipment Type Classification:")
         form.addRow(self.equipment_lbl, self.equipment)
+
+        # Validation controls
+        self.validation_lbl = QLabel("Validation Action:")
+
+        self.check_only_radio = QRadioButton("Check Only")
+        self.check_and_update_radio = QRadioButton("Check & Update")
+
+        # Mutual exclusion
+        self.validation_group = QButtonGroup(self)
+        self.validation_group.addButton(self.check_only_radio)
+        self.validation_group.addButton(self.check_and_update_radio)
+
+        self.check_only_radio.setChecked(True)
+
+        # Radio row
+        self.validation_widget = QWidget()
+        validation_layout = QHBoxLayout(self.validation_widget)
+        validation_layout.setContentsMargins(0, 0, 0, 0)
+        validation_layout.addWidget(self.check_only_radio)
+        validation_layout.addWidget(self.check_and_update_radio)
+        validation_layout.addStretch()
+
+        # Source selector
+        self.source_for_update_lbl = QLabel("Source for Update:")
+        self.source_for_update = QComboBox()
+        self.source_for_update.addItems(["Equipment", "MPDM"])
+
+        # Initially disabled
+        self.source_for_update.setEnabled(False)
+
+        # Toggle source selector
+        self.check_and_update_radio.toggled.connect(
+            self.toggle_update_source
+        )
+
+        # Add to form
+        form.addRow(self.validation_lbl, self.validation_widget)
+        form.addRow(self.source_for_update_lbl, self.source_for_update)
+        
+
 
         self.chunk_size = QLineEdit("100")
         self.chunk_lbl = QLabel("Chunk Target Splitting Size:")
@@ -214,6 +254,14 @@ class ProcessingPage(QWidget):
         
         self.toggle_inputs()
 
+
+    def toggle_update_source(self, checked):
+        # to toggle update source for cycle time validation
+        self.source_for_update.setEnabled(checked)
+        self.source_for_update_lbl.setVisible(checked)
+        self.source_for_update.setVisible(checked)
+
+
     def sync_workspace(self, path):
         self.active_workspace_path = path
         self.input_path.setText(path)
@@ -253,6 +301,7 @@ class ProcessingPage(QWidget):
         needs_temp = idx in [2, 3]
         needs_equip = idx in [0, 2, 3, 4,5] # Enabled option index 4 profile
         is_analysis = idx == 4
+        needs_validation_actions = idx in [5]
 
         self.equipment.setVisible(needs_equip)
         self.equipment_lbl.setVisible(needs_equip)
@@ -266,6 +315,13 @@ class ProcessingPage(QWidget):
         self.particular_lbl.setVisible(is_analysis)
         self.activity_field.setVisible(is_analysis)
         self.activity_lbl.setVisible(is_analysis)
+
+        # Data validation buttons will by active if option 5 is selected
+        # self.validation_group.setVissible(needs_validation_actions)
+        self.validation_widget.setVisible(needs_validation_actions)
+        self.validation_lbl.setVisible(needs_validation_actions)
+        self.source_for_update_lbl.setVisible(needs_validation_actions)
+        self.source_for_update.setVisible(needs_validation_actions)
         
         self.update_output_defaults()
 
@@ -367,7 +423,12 @@ class ProcessingPage(QWidget):
             self.engine = ValidationEngine(
                 input_folder=inf,
                 equipment=self.equipment.currentText().lower(),
-                logger=self.log.append
+                logger=self.log.append,
+                actions = {
+                    'mode': ("check_and_update" if self.check_and_update_radio.isChecked() else "check_only"
+                    ),
+                    "source": self.source_for_update.currentText() if self.check_and_update_radio.isChecked() else None
+                }
             )
 
         self.w = Worker(self.engine)
