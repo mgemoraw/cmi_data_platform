@@ -10,6 +10,7 @@ from openpyxl import Workbook, load_workbook
 from datetime import datetime 
 from mappings import COLUMN_MAPPINGS
 
+
 class DataProcessingEngine:
     def __init__(self, input_folder=None, template_path=None, logger=print, equipment=None):
         self.source_path = Path(input_folder) if input_folder else Path.cwd()
@@ -43,7 +44,6 @@ class DataProcessingEngine:
 
     def log(self, message):
         self.logger(message)
-
 
     def update_progress(self, value):
         if self.progress_callback:
