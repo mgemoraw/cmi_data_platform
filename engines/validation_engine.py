@@ -63,6 +63,11 @@ class ValidationEngine:
     def _perform_cycle_time_update(self, ):
         pass 
 
+    def _validate_cycle_time_columns(self):
+        equipment_type = self.equipment
+        pass
+
+
     def read_excel_contents(self):
         """
         Main runner target called by your PySide6 QThread Worker.

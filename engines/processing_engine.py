@@ -8,7 +8,8 @@ import shutil
 from copy import copy 
 from openpyxl import Workbook, load_workbook
 from datetime import datetime 
-from mappings import COLUMN_MAPPINGS
+from .mappings import COLUMN_MAPPINGS
+
 
 
 class DataProcessingEngine:

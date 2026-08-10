@@ -14,6 +14,8 @@ from PySide6.QtCore import QThread, Signal, Qt
 from openpyxl import load_workbook, Workbook
 import win32com.client as win32
 
+
+
 # =====================================================================
 # THREAD WORKER - ASYNCHRONOUS METADATA EXTRACTOR
 # =====================================================================

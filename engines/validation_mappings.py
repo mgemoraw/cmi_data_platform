@@ -56,7 +56,7 @@ COLUMN_MAPPINGS = {
         
 
         "column_mappings": {
-            "equipment": "M",
+            "equipment": "N",
             "mpdm": "B",
         }
     },
