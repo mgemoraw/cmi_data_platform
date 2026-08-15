@@ -99,7 +99,8 @@ class ProcessingPage(QWidget):
             "Data Aggregation & Template Counter",
             "Clean Data",
             "Data Analysis Engine",  # Added previous analysis engine capability hook option here
-            "Cycle Time Cross-Validation"
+            "Cycle Time Cross-Validation",
+            "SUM Cell Validation"  # Added new SUM cell validation engine option here
         ])
         self.task_selector.currentIndexChanged.connect(self.toggle_inputs)
         form.addRow("Select Pipeline Task Engine:", self.task_selector)
@@ -299,7 +300,7 @@ class ProcessingPage(QWidget):
         idx = self.task_selector.currentIndex()
         is_split = idx == 0
         needs_temp = idx in [2, 3]
-        needs_equip = idx in [0, 2, 3, 4,5] # Enabled option index 4 profile
+        needs_equip = idx in [0, 2, 3, 4,5,6] # Enabled option index 4 profile
         is_analysis = idx == 4
         needs_validation_actions = idx in [5]
 
@@ -430,6 +431,16 @@ class ProcessingPage(QWidget):
                     "source": self.source_for_update.currentText() if self.check_and_update_radio.isChecked() else None
                 }
             )
+
+        elif idx == 6:
+                    # Instantiating the newly created ValidationEngine configuration
+                    from engines.sum_validation_engine import SUMValidationEngine
+                    self.engine = SUMValidationEngine(
+                        input_folder=inf,
+                        equipment=self.equipment.currentText().lower(),
+                        logger=self.log.append,
+                    )
+        
 
         self.w = Worker(self.engine)
         self.w.log_signal.connect(self.log.append)
