@@ -8,6 +8,17 @@ class SUMValidationEngine:
         self.logger = logger
         self.progress_callback = progress_callback
         self.equipment = equipment
+        self.is_cancelled_callback = None
+
+    def stop(self):
+        self._is_cancelled = True
+
+    def is_stopped(self):
+        if self._is_cancelled:
+            return True
+        if self.is_cancelled_callback and self.is_cancelled_callback():
+            return True
+        return False
 
     def _log(self, text):
         if self.logger:
@@ -38,6 +49,11 @@ class SUMValidationEngine:
             return False
 
         for index, file in enumerate(all_files):
+            # Check for cancellation before processing each file
+            if self.is_stopped():
+                if self.logger:
+                    self.logger("⚠️ Processing aborted mid-task.")
+                return
             full_path = self.source_folder / file
             self._log(f"🔄 Checking if Sum cell is within sheet boundaries for data persistence inside: {file}")
 

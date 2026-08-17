@@ -29,6 +29,17 @@ class EquipmentProductivity:
 
 		# Split size
 		self.chunk_size = 100
+		self.is_cancelled_callback = None
+
+	def stop(self):
+		self._is_cancelled = True
+
+	def is_stopped(self):
+		if self._is_cancelled:
+			return True
+		if self.is_cancelled_callback and self.is_cancelled_callback():
+			return True
+		return False
 
 	def log(self, message):
 		self.logger(message)
@@ -59,6 +70,11 @@ class EquipmentProductivity:
 
 		
 		for index, file in enumerate(files):
+			# Check for cancellation before processing each file
+			if self.is_stopped():
+				if self.logger:
+					self.logger("⚠️ Processing aborted mid-task.")
+				return
 
 			# print(f"\nReading file: {file.name}")
 			self.log(f"\nReading file: {file.name}")

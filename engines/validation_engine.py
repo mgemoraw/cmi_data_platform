@@ -14,6 +14,17 @@ class ValidationEngine:
         self.logger = logger
         self.progress_callback = None # Will be bound by Worker thread dynamically
         self.actions = actions
+        self.is_cancelled_callback = None
+
+    def stop(self):
+        self._is_cancelled = True
+
+    def is_stopped(self):
+        if self._is_cancelled:
+            return True
+        if self.is_cancelled_callback and self.is_cancelled_callback():
+            return True
+        return False
 
                 
     def log(self, message):
@@ -101,6 +112,12 @@ class ValidationEngine:
         end_row = equip_start_row + max_rows_to_check - 1
 
         for idx, file_name in enumerate(files):
+            # Check for cancellation before processing each file
+            if self.is_stopped():
+                if self.logger:
+                    self.logger("⚠️ Processing aborted mid-task.")
+                return
+            
             file_path = os.path.join(self.source_path, file_name)
             self.log(f"📄 Validating file [{idx+1}/{len(files)}]: {file_name}")
             

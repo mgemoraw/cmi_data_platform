@@ -6,14 +6,17 @@ from pathlib import Path
 import re
 import shutil
 from copy import copy 
+from openpyxl.cell.cell import MergedCell
+
 from openpyxl import Workbook, load_workbook
 from datetime import datetime 
 from .mappings import COLUMN_MAPPINGS
+from soil_resolver import get_fill_factor, get_volume_correction, resolve_soil_type
 
 
 
 class DataProcessingEngine:
-    def __init__(self, input_folder=None, template_path=None, logger=print, equipment=None):
+    def __init__(self, input_folder=None, template_path=None, logger=print, equipment=None,operation=None, *args, **kwargs):
         self.source_path = Path(input_folder) if input_folder else Path.cwd()
         self.template_path = Path(template_path) if template_path else Path.cwd()
         self.template_mapping = {}
@@ -29,6 +32,9 @@ class DataProcessingEngine:
         self.date_pattern = r"(\d{2}[-_/]\d{2}[-_/]\d{4})"
         self.data_count_pattern  = r"(\d{2}[-_/]\d{2}[-_/]\d{2}[-_/]\d{4})"
 
+
+        self.metadata = kwargs.get("mapping_config")
+
         self.SHEET_ALIASES = {
             "daily_variables": [
                 "daily_variables",
@@ -42,6 +48,18 @@ class DataProcessingEngine:
                 "MPDM"
             ]
         }
+
+        self.is_cancelled_callback = None
+
+    def stop(self):
+        self._is_cancelled = True
+
+    def is_stopped(self):
+        if self._is_cancelled:
+            return True
+        if self.is_cancelled_callback and self.is_cancelled_callback():
+            return True
+        return False
 
     def log(self, message):
         self.logger(message)
@@ -61,6 +79,24 @@ class DataProcessingEngine:
 
             return count, date
         return None, None
+    
+    
+    def _extract_date(self, file_name):
+        match = re.search(self.date_pattern, file_name)
+        if match:
+            date_str = match.group(1)  # Extracts the date substring (e.g., "02-03-2014")
+            try:
+                # Convert the string to a real datetime object for accurate chronological sorting
+                # Adjust "%d-%m-%Y" if your pattern captures dates differently (e.g., "%Y-%m-%d")
+                return datetime.strptime(date_str, "%d-%m-%Y")
+            except ValueError:
+                # Handle cases where the regex matches a string that isn't a valid calendar date
+                # return datetime.max
+                return None
+        
+        # If no date pattern is found, return datetime.max to safely push the file to the end of the list
+        return None
+
 
     def sort_files_by_date(self, files):
         def extract_date_object(file_name):
@@ -96,6 +132,17 @@ class DataProcessingEngine:
 
         return equipment, COLUMN_MAPPINGS[equipment]
     
+    def get_mpdm_config(self):
+        return COLUMN_MAPPINGS['mpdm']
+
+    def _read_metadata(self, ):
+        # Identify equipment here
+        equipment, config = self.get_equipment_config()
+        return {} 
+    
+    def _update_metadata(self):
+        pass 
+    
     def list_excel_files(self):
         """
         Return all Excel files in the folder
@@ -111,6 +158,12 @@ class DataProcessingEngine:
         total_files = self.list_excel_files()
         
         for index, file in enumerate(files):
+            # Check for cancellation before processing each file
+            if self.is_stopped():
+                if self.logger:
+                    self.logger("⚠️ Processing aborted mid-task.")
+                return
+            
             if file.endswith('.xlsx') and file != self.template_path.name:
                 self.logger(f"📄 Processing file: {file}")
                 # Implement your data processing logic here
@@ -137,6 +190,16 @@ class DataProcessingEngine:
                 self.copy_daily_variables(os.path.join(self.source_path, file), date_str, data_count)
 
                 self.logger(f"✅ Copied daily variables for file: {file}")
+
+                metadata = {
+                    "date": date_str,
+                    "equipment": self.equipment,
+                    "equipment_types": 1,
+                    "operation": None,
+                    "project_code": None,
+                    "data_collector": None,
+                }
+
 
                 # copy main template
                 instance_template = self.copy_template(self.template_path, date_str, data_count)
@@ -283,7 +346,7 @@ class DataProcessingEngine:
         except Exception as e:
             self.logger(f"❌ Error populating MPDM sheet: {e}")
 
-    def _populate_productivity(self, source_file_path, template_path):
+    def _populate_productivity(self, source_file_path, template_path, metadata=None):
         try:
             # Identify equipment here
             equipment, config = self.get_equipment_config()
@@ -307,14 +370,64 @@ class DataProcessingEngine:
 
             column_mappings = config["column_mappings"]
 
-            self._copy_header_data(source_ws, template_ws, config)
+
+            record_date = self._extract_date(file_name=source_file_path)
+            if record_date:
+                config['header_mappings']['date'] = record_date.strftime("%d-%m-%Y")
+
+            self._copy_header_data(source_ws, template_ws, config, metadata=metadata)
+
 
 
             for row in range(source_start_row, source_ws.max_row + 1):
                 target_row = row + row_offset
                 for source_col, dest_col in column_mappings.items():
-                    template_ws[f"{dest_col}{target_row}"] = source_ws[f"{source_col}{row}"].value
+                    # template_ws[f"{dest_col}{target_row}"] = source_ws[f"{source_col}{row}"].value
+                    # check if column is custom field
+                    custom_columns = config.get("custom_columns")
+                    if custom_columns and dest_col in custom_columns:
+                    # if dest_col in ['H', 'I', 'J', 'K']:
+                        # swing_angle = source_ws[f"{source_col}{row}"].value
+                        # dest_col[f'{dest_col}{target_row}'] = 
+                        match dest_col:
+                            case 'H':
+                                # Bucket fill factor
+                                soil = source_ws[f"J{row}"].value
+                                resolved_soil = resolve_soil_type(soil)
+                                fill_factor = get_fill_factor(resolved_soil)
 
+                                # self.logger(f"...Updating Bucket fill factor {dest_col}{row} >> {fill_factor}")
+
+                                template_ws[f"{dest_col}{target_row}"] = fill_factor.get("fill_factor")
+                            case 'I':
+                                # angle of swing 
+                                swing_angle = source_ws[f"{source_col}{row}"].value
+                                depth = source_ws[f"M{row}"].value
+                                asd = self._get_asd(swing_angle)
+
+                                # self.logger(f"...Updating AS:D {dest_col}{row} >> {asd} ")
+
+                                template_ws[f"{dest_col}{target_row}"] = asd
+                            case 'J':
+                                # Volume correction
+                                raw_soil = source_ws[f"J{row}"].value
+                                volume_correction = get_volume_correction(raw_soil)
+                                
+                                # self.logger(f"...Updating Volume correction {dest_col}{row} >> {volume_correction} ")
+                                
+                                template_ws[f"{dest_col}{target_row}"] = volume_correction
+                                
+                            case 'K':
+                                # Efficiency
+                                # self.logger(f"...Updating Efficiency {dest_col}{row} >> {60} ")
+                                template_ws[f"{dest_col}{target_row}"] = 60
+                    else:
+                        cell = template_ws[f"{dest_col}{target_row}"]
+                        if isinstance(cell, MergedCell):
+                            self.logger(
+                                f"Cell {cell.coordinate} is part of a merged range"
+                            )
+                        template_ws[f"{dest_col}{target_row}"] = source_ws[f"{source_col}{row}"].value
                 template_wb.save(template_path)
 
             # if "meta_data" in config["header_mappings"]:
@@ -330,32 +443,114 @@ class DataProcessingEngine:
         except Exception as e:
             self.logger(f"❌ Error populating productivity: {e}")
 
-    def _copy_header_data(self, source_ws, template_ws, config):
-        header_config = config.get("header_mappings", {})
+    # def _copy_header_data(self, source_ws, template_ws, config):
+    #     header_config = config.get("header_mappings", {})
+    #     if not header_config:
+    #         return 
+
+    #     date = header_config.get("date")
+    #     project_code = header_config.get("project_code")
+    #     data_collector = header_config.get("data_collector")
+    #     number_of_equipment_types = header_config.get("number_of_equipment_types")
+    #     if date:
+    #         template_ws['L6'] = source_ws[date].value
+    #     if project_code:
+    #         template_ws['M6'] = source_ws[project_code].value
+    #     if data_collector:
+    #         template_ws['N6'] = source_ws[data_collector].value
+    #     if number_of_equipment_types:
+    #         template_ws['O6'] = source_ws[number_of_equipment_types].value
+
+    def _copy_header_data(self, source_ws, template_ws, config, metadata=None):
+        header_config = config.get("source_header_mappings", {})
+        dest_header_cells = config.get("dest_header_mappings", None)
+
         if not header_config:
             return 
 
-        date = header_config.get("date")
+        date = header_config.get("date") 
         project_code = header_config.get("project_code")
         data_collector = header_config.get("data_collector")
-        number_of_equipment_types = header_config.get("number_of_equipment_types")
+        equipment_types = header_config.get("equipment_types")
+        operation = header_config.get("operation")
+        equipment = self.equipment
+
+
+        # if template_ws.title.lower().startswith(self.equipment.lower()):
+    
         if date:
-            template_ws['L6'] = source_ws[date].value
+            template_ws[dest_header_cells['date']] = source_ws[date].value
         if project_code:
-            template_ws['M6'] = source_ws[project_code].value
-        if data_collector:
-            template_ws['N6'] = source_ws[data_collector].value
-        if number_of_equipment_types:
-            template_ws['O6'] = source_ws[number_of_equipment_types].value
+            template_ws[dest_header_cells['project_code']] = source_ws[project_code].value
+
+        # if data_collector:
+        #     template_ws[dest_header_cells['data_collector']] = source_ws[data_collector].value
+
+        if equipment_types:
+            template_ws[dest_header_cells['equipment_types']] = source_ws[equipment_types].value
 
 
-    def _populate_mpdm(self, source_file_path, template_path):
+    def _populate_heading_data(self, source_ws, template_ws, config, metadata=None):
+        header_config = config.get("source_header_mappings", {})
+        dest_header_cells = config.get("dest_column_mappings", None)
+
+        mpdm_config = self.get_mpdm_config()
+        mpdm_heading = mpdm_config['dest_header_mappings']
+        
+
+        date = header_config.get("date") 
+        project_code = header_config.get("project_code")
+        data_collector = header_config.get("data_collector")
+        equipment_types = header_config.get("equipment_types")
+
+        sheet_title = template_ws.title.lower()
+
+        if sheet_title.startswith(self.equipment.lower()):
+            if date:
+                template_ws[dest_header_cells['date']] = source_ws[date].value
+            if project_code:
+                template_ws[dest_header_cells['project_code']] = source_ws[project_code].value
+
+            # if data_collector:
+            #     template_ws[dest_header_cells['data_collector']] = source_ws[data_collector].value
+
+            if equipment_types:
+                template_ws[dest_header_cells['equipment_types']] = source_ws[equipment_types].value
+
+        if sheet_title.startswith("mpdm"):
+            if date:
+                template_ws[mpdm_heading['date']] = source_ws[date].value
+            if project_code:
+                template_ws[mpdm_heading['project_code']] = source_ws[project_code].value
+
+            # if operation:
+            #     template_ws[mpdm_heading['operation']] = source_ws[operation].value
+
+            if equipment_types:
+                template_ws[mpdm_heading['equipment_types']] = source_ws[equipment_types].value
+
+
+    def _populate_mpdm(self, source_file_path, template_path, metadata=None):
         try:
             source_wb = load_workbook(source_file_path)
             source_ws = source_wb["mpdm"]
 
+            mpdm_config = self.get_mpdm_config()
+            source_config = mpdm_config['source_header_mappings']
+            dest_config = mpdm_config["dest_header_mappings"]
+
             template_wb = load_workbook(template_path)
-            template_ws = template_wb["MPDM 1"]
+            template_ws = None
+            for tws in template_wb.sheetnames:
+                if tws.startswith("mpdm"):
+                    template_ws=template_wb[tws]
+                    break
+                else:
+                    continue
+
+            # template_ws = template_wb["MPDM 1"]
+            if not template_ws:
+                raise Exception("MPDM sheet not found!")
 
             source_start_row = 7
             template_start_row = 13
@@ -391,6 +586,20 @@ class DataProcessingEngine:
                     template_ws[f"{target_col}{target_row}"] = (
                         source_ws[f"{source_col}{row}"].value
                     )
+            # self._copy_header_data(source_ws, template_ws, mpdm_config )
+            if metadata:
+                template_ws[dest_config['project_code']] = source_ws[metadata.get("project_code")].value
+                template_ws[dest_config['operation']] = source_ws[metadata.get("operation")].value
+                # template_ws[dest_config['equipment_types']] = metadata.get("equipment_types")
+                template_ws[dest_config['date']] = source_ws[metadata.get("date")].value
+                template_ws[dest_config['equipment']] = self.equipment
+            
+            else: #  mpdm_config:
+                template_ws[dest_config['project_code']] = source_ws[source_config.get("project_code")].value
+                template_ws[dest_config['operation']] = source_ws[source_config.get("operation")].value
+                # template_ws[dest_config['equipment_types']] = metadata.get("equipment_types")
+                template_ws[dest_config['date']] = source_ws[source_config.get("date")].value
+                template_ws[dest_config['equipment']] = self.equipment
 
             template_wb.save(template_path)
 

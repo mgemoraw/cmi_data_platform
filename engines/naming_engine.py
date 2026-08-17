@@ -21,6 +21,17 @@ class FileRenamingEngine:
 
         # Pattern for DD-MM-YYYY
         self.date_pattern = r"(\d{2}-\d{2}-\d{4})"
+        self.is_cancelled_callback = None
+
+    def stop(self):
+        self._is_cancelled = True
+
+    def is_stopped(self):
+        if self._is_cancelled:
+            return True
+        if self.is_cancelled_callback and self.is_cancelled_callback():
+            return True
+        return False
 
     def _log(self, message):
         """Sends message to GUI log or console"""
@@ -50,6 +61,11 @@ class FileRenamingEngine:
         # 3. Process loop
         try:
             for index, filename in enumerate(files):
+                # Check for cancellation before processing each file
+                if self.is_stopped():
+                    if self.logger:
+                        self.logger("⚠️ Processing aborted mid-task.")
+                    return
                 src_path = os.path.join(self.input_folder, filename)
                 
                 # Extract Date
