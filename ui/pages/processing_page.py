@@ -65,12 +65,25 @@ class Worker(QThread):
     def __init__(self, engine):
         super().__init__()
         self.engine = engine
+        self._is_cancelled = False
+
+    def stop(self):
+        self._is_cancelled = True
+        # Inform the engine to stop if it supports cancellation checks
+        if hasattr(self.engine, 'stop'):
+            self.engine.stop()
 
     def run(self):
         self.engine.logger = self.log_signal.emit
         self.engine.progress_callback = self.progress_signal.emit
+
+        # Pass a cancellation check function to the engine if supported
+        if hasattr(self.engine, 'is_cancelled_callback'):
+            self.engine.is_cancelled_callback = lambda: self._is_cancelled
+
         if hasattr(self.engine, 'read_excel_contents'):
             self.engine.read_excel_contents()
+        
         self.finished_signal.emit()
 
 
@@ -81,6 +94,7 @@ class ProcessingPage(QWidget):
     def __init__(self):
         super().__init__()
         self.active_workspace_path = ""
+        self.worker_thread = None  # Reference to track the running thread
         self.init_ui()
 
     def init_ui(self):
@@ -99,7 +113,8 @@ class ProcessingPage(QWidget):
             "Data Aggregation & Template Counter",
             "Clean Data",
             "Data Analysis Engine",  # Added previous analysis engine capability hook option here
-            "Cycle Time Cross-Validation"
+            "Cycle Time Cross-Validation",
+            "SUM Cell Validation"  # Added new SUM cell validation engine option here
         ])
         self.task_selector.currentIndexChanged.connect(self.toggle_inputs)
         form.addRow("Select Pipeline Task Engine:", self.task_selector)
@@ -299,7 +314,7 @@ class ProcessingPage(QWidget):
         idx = self.task_selector.currentIndex()
         is_split = idx == 0
         needs_temp = idx in [2, 3]
-        needs_equip = idx in [0, 2, 3, 4,5] # Enabled option index 4 profile
+        needs_equip = idx in [0, 2, 3, 4,5,6] # Enabled option index 4 profile
         is_analysis = idx == 4
         needs_validation_actions = idx in [5]
 
@@ -373,6 +388,14 @@ class ProcessingPage(QWidget):
         </table>""")
 
     def execute_pipeline(self):
+        # 1. STOP ACTION: If worker is already running, request termination
+        if self.worker_thread and self.worker_thread.isRunning():
+            self.log.append("⚠️ Requesting process cancellation...")
+            self.start_btn.setEnabled(False)
+            self.start_btn.setText("⏳ Stopping...")
+            self.worker_thread.stop()
+            return
+        
         idx = self.task_selector.currentIndex()
         inf = self.input_path.text()
         outf = self.output_path.text()
@@ -431,14 +454,53 @@ class ProcessingPage(QWidget):
                 }
             )
 
-        self.w = Worker(self.engine)
-        self.w.log_signal.connect(self.log.append)
-        self.w.progress_signal.connect(self.progress.setValue)
-        self.w.finished_signal.connect(lambda: [
-            self.log.append("✅ Operational Run Completed System Run Pipeline Executed Successfully!"), 
+        elif idx == 6:
+                    # Instantiating the newly created ValidationEngine configuration
+                    from engines.sum_validation_engine import SUMValidationEngine
+                    self.engine = SUMValidationEngine(
+                        input_folder=inf,
+                        equipment=self.equipment.currentText().lower(),
+                        logger=self.log.append,
+                    )
+        
+
+        # self.w = Worker(self.engine)
+        # self.w.log_signal.connect(self.log.append)
+        # self.w.progress_signal.connect(self.progress.setValue)
+        # self.w.finished_signal.connect(lambda: [
+        #     self.log.append("✅ Operational Run Completed System Run Pipeline Executed Successfully!"), 
+        #     self.refresh_file_list(self.input_path.text())
+        # ])
+        # self.w.start()
+
+
+        # Instantiate worker thread
+        self.worker_thread = Worker(self.engine)
+        self.worker_thread.log_signal.connect(self.log.append)
+        self.worker_thread.progress_signal.connect(self.progress.setValue)
+        self.worker_thread.finished_signal.connect(self.on_pipeline_finished)
+       
+        
+        # Switch button state to Stop mode
+        self.start_btn.setText("🛑 Stop Process")
+        self.start_btn.setStyleSheet("background-color: #ef4444; min-height: 36px; font-weight: bold; color: white; border-radius: 6px;")
+        
+        self.worker_thread.start()
+
+
+    def on_pipeline_finished(self, success=True):
+        # Reset button state
+        self.start_btn.setEnabled(True)
+        self.start_btn.setText("🚀 Run Pipeline")
+        self.start_btn.setStyleSheet("background-color: #10b981; min-height: 36px; font-weight: bold; color: white; border-radius: 6px;")
+        
+        if success:
+            self.log.append("✅ Operational Run Completed System Run Pipeline Executed Successfully!")
             self.refresh_file_list(self.input_path.text())
-        ])
-        self.w.start()
+        else:
+            self.log.append("🛑 Process was stopped by user.")
+        
+        self.worker_thread = None
 
     def open_output(self):
         f = self.output_path.text()

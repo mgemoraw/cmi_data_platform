@@ -135,7 +135,7 @@ class OutputData:
 
 
 class AnalysisEngine:
-    def __init__(self, data_folder, template_path=None, equipment=None, particular=None, activity=None, logger=None, progress_callback=None):
+    def __init__(self, data_folder, template_path=None, equipment=None, particular=None, activity=None, logger=None, progress_callback=None, is_cancelled_callback=None):
         self.source_folder = Path(data_folder)
         self.output_folder = self.source_folder / "output"
         self.template_path = Path(template_path) if template_path else None
@@ -146,6 +146,18 @@ class AnalysisEngine:
         self.logger = logger
         self.progress_callback = progress_callback
         self.output_folder.mkdir(exist_ok=True)
+        self._is_cancelled = False
+        self.is_cancelled_callback = None
+
+    def stop(self):
+        self._is_cancelled = True
+
+    def is_stopped(self):
+        if self._is_cancelled:
+            return True
+        if self.is_cancelled_callback and self.is_cancelled_callback():
+            return True
+        return False
 
     def get_target_cells(self):
         # 1. Define the structural master registry for all your fleet types
@@ -300,6 +312,13 @@ class AnalysisEngine:
             return False
 
         for index, file in enumerate(all_files):
+
+            # Check for cancellation before processing each file
+            if self.is_stopped():
+                if self.logger:
+                    self.logger("⚠️ Processing aborted mid-task.")
+                return
+                
             full_path = os.path.join(self.source_folder, file)
             self._log(f"🔄 Re-evaluating Excel connections for: {file}")
             self.refresh_excel_file(full_path)
@@ -338,7 +357,7 @@ class AnalysisEngine:
                     operation_activity=self.activity,
                     equipment_type=self.equipment,
                     description_work=self.particular,
-                    productivity=self.extract_average_productivity(wb, ws, pr_col),
+                    productivity=self._extract_average_productivity(wb, ws, pr_col),
                     ideal_productivity=ws[f'{ideal_col}{start_row}'].value,
                     overall_method_productivity=ws[f'{overall_col}{start_row}'].value,
                     ideal_cycle_variability=ws[f"{ideal_cycle_col}{start_row}"].value,
@@ -360,24 +379,40 @@ class AnalysisEngine:
         return True
     
     def get_target_cells(self):
-        if self.equipment.lower() == 'dozer':
-            return {
-                'productivity': "N",
-                'ideal_productivity': "O",
-                'overall_method_productivity' :"P",
-                'ideal_cycle_variability': "Q",
-                'overall_cycle_variability': "R",
-            }
-        elif self.equipment.lower() == 'excavator':
-            return {
-                'productivity': "O",
-                'ideal_productivity': "P",
-                'overall_method_productivity' :"Q",
-                'ideal_cycle_variability': "R",
-                'overall_cycle_variability': "S",
-            }
-        else:
-            return {}
+        from .analysis_mappings import EQUIPMENT_MAPPING
+        return EQUIPMENT_MAPPING.get(self.equipment.lower(), {
+            'productivity': "O",
+            'ideal_productivity': "P",
+            'overall_method_productivity': "Q",
+            'ideal_cycle_variability': "R",
+            'overall_cycle_variability': "S"
+        })
+        # if self.equipment.lower() == 'dozer':
+        #     return {
+        #         'productivity': "N",
+        #         'ideal_productivity': "O",
+        #         'overall_method_productivity' :"P",
+        #         'ideal_cycle_variability': "Q",
+        #         'overall_cycle_variability': "R",
+        #     }
+        # elif self.equipment.lower() == 'excavator':
+        #     return {
+        #         'productivity': "O",
+        #         'ideal_productivity': "P",
+        #         'overall_method_productivity' :"Q",
+        #         'ideal_cycle_variability': "R",
+        #         'overall_cycle_variability': "S",
+        #     }
+
+        
+        # else:
+        #     return {
+        #         'productivity': "N",
+        #         'ideal_productivity': "O",
+        #         'overall_method_productivity' :"P",
+        #         'ideal_cycle_variability': "Q",
+        #         'overall_cycle_variability': "R",
+        #     }
 
 
     def extract_data_count(self, file):
@@ -412,14 +447,25 @@ class AnalysisEngine:
             if hasattr(m6, "strftime"):
                 return m6.strftime("%Y-%m-%d")
             return str(m6)
+
         
+        elif (n6 is not None and o6 is not None) and self.equipment.lower() == 'truck':
+            # e.g., "05/12/2026" or "5-December-2026"
+            return f"{m6}/{n6}/{o6}"
+                
+        elif m6 is not None and self.equipment.lower() == 'truck':
+            # If Excel already parsed it as a datetime object, format it nicely
+            if hasattr(m6, "strftime"):
+                return m6.strftime("%Y-%m-%d")
+            return str(m6)
+
         # Case 3: Completely empty fallback
         return "N/A"
     
     def update_template_formulas(self, file):
         pass
 
-    def extract_average_productivity(self, source_wb, source_ws, source_column='N'):
+    def extract_average_productivity(self, source_wb, source_ws, source_column='O'):
         # file = Path(file)
         # wb = load_workbook(file)
         # equipment_ws = None
@@ -448,12 +494,43 @@ class AnalysisEngine:
 
         # calculate the average safely
         if not data:
-            print("⚠️ No numeric values found in range N11:N111. Average cannot be computed.")
+            print("⚠️ No numeric values found in range O11:O111. Average cannot be computed.")
             calculated_average = "N/A"
         else:
             calculated_average = sum(data) / len(data)
 
         return calculated_average
+
+    def _extract_average_productivity(self, source_wb, source_ws, source_column='O'):
+        data = []
+        
+        # Iterate dynamically starting from row 11 up to the max row in the worksheet
+        for row in range(11, source_ws.max_row + 1):
+            cell_value = source_ws[f'{source_column}{row}'].value
+            
+            # Stop scanning if we hit an empty cell
+            if cell_value is None:
+                break
+                
+            try:
+                # Convert numeric values (int or float)
+                numeric_val = float(cell_value)
+                data.append(numeric_val)
+            except (ValueError, TypeError):
+                # The average row usually contains an Excel formula (e.g., "=AVERAGE(...)")
+                # or a text label, which raises a ValueError/TypeError.
+                # Once we encounter this after collecting data, we have reached the end.
+                if data:
+                    break
+                continue
+
+        source_wb.close()  # Free memory
+
+        if not data:
+            print(f"⚠️ No numeric values found in column {source_column} starting from row 11.")
+            return "N/A"
+
+        return sum(data) / len(data)
 
 
 

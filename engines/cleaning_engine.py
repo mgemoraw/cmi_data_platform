@@ -59,6 +59,17 @@ class DataCleaningEngine:
         self.date_pattern = r"(\d{2}[-_/]\d{2}[-_/]\d{4})"
         self.data_count_pattern  = r"(\d{2}[-_/]\d{2}[-_/]\d{2}[-_/]\d{4})"
         self.equipment = equipment
+        self.is_cancelled_callback = None
+
+    def stop(self):
+        self._is_cancelled = True
+
+    def is_stopped(self):
+        if self._is_cancelled:
+            return True
+        if self.is_cancelled_callback and self.is_cancelled_callback():
+            return True
+        return False
 
     def log(self, message):
         self.logger(message)
@@ -70,6 +81,11 @@ class DataCleaningEngine:
     
     def start_cleaning(self):
         for index, file in enumerate(os.listdir(self.source_path)):
+            # Check for cancellation before processing each file
+            if self.is_stopped():
+                if self.logger:
+                    self.logger("⚠️ Processing aborted mid-task.")
+                return
             if file.endswith('.xlsx') and file != self.template_path.name:
                 self.logger(f"📂 Processing file: {file}")
                 self._process_cleaning(file)
@@ -212,6 +228,11 @@ class DataCleaningEngine:
         # files = self.sort_files_by_date(os.listdir(self.source_path))
 
         for index, file in enumerate(os.listdir(self.source_path)):
+            # Check for cancellation before processing each file
+            if self.is_stopped():
+                if self.logger:
+                    self.logger("⚠️ Processing aborted mid-task.")
+                return
             self.logger(f"... Processing file: {file}")
 
     def _clean_blanks(self, ws):
