@@ -14,6 +14,7 @@ class ValidationEngine:
         self.logger = logger
         self.progress_callback = None # Will be bound by Worker thread dynamically
         self.actions = actions
+        self._is_cancelled = False
         self.is_cancelled_callback = None
 
     def stop(self):

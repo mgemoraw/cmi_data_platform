@@ -48,7 +48,7 @@ class DataProcessingEngine:
                 "MPDM"
             ]
         }
-
+        self._is_cancelled = False
         self.is_cancelled_callback = None
 
     def stop(self):

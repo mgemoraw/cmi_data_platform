@@ -8,6 +8,7 @@ class SUMValidationEngine:
         self.logger = logger
         self.progress_callback = progress_callback
         self.equipment = equipment
+        self._is_cancelled = False
         self.is_cancelled_callback = None
 
     def stop(self):
