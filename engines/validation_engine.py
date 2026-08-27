@@ -208,3 +208,8 @@ class ValidationEngine:
             wb.close()
         except Exception as e:
             self.log(f"{str(e)}")
+
+
+# =IF($B$8="gravel", average(H4:I4), IF($B$8="hard clay",average(H7:I7),IF($B$8="rock",average(H6:I6), IF($B$8="sand",average(H4:I4), IF ($B$8="sandy clay", average(H3:I3),"")))))
+
+
