@@ -53,14 +53,7 @@ COLUMN_MAPPINGS = {
             "equipment_types": 'J6',
             'equipment': "B9"
         },
-        "dest_header_mappings": {
-            "date": "M6",
-            "project_code": "D6",
-            "equipment_types": "J6",
-            "equipment": "B9",
-            "operation": "B8",
-        },
-
+        
         "column_mappings": {
             "E": "B",  # Equipment Tag
             "F": "C",  # Man power
@@ -97,7 +90,7 @@ COLUMN_MAPPINGS = {
         },
         "dest_header_mappings": {
             "date": "L6",
-            "project_code": "D6",
+            "project_code": "C6",
             "operation": None,
             "equipment_types": 'I6',
             'equipment': None
@@ -148,7 +141,7 @@ COLUMN_MAPPINGS = {
 
         "dest_header_mappings": {
             "date": "M6",
-            "project_code": "D6",
+            "project_code": "C6",
             "equipment_types": "J6",
             "equipment": "B9",
             "operation": "B8",

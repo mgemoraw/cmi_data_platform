@@ -11,7 +11,7 @@ from openpyxl.cell.cell import MergedCell
 from openpyxl import Workbook, load_workbook
 from datetime import datetime 
 from .mappings import COLUMN_MAPPINGS
-from soil_resolver import get_fill_factor, get_volume_correction, resolve_soil_type
+from core.soil_resolver import get_fill_factor, get_volume_correction, resolve_soil_type
 
 
 
@@ -542,7 +542,7 @@ class DataProcessingEngine:
             template_wb = load_workbook(template_path)
             template_ws = None
             for tws in template_wb.sheetnames:
-                if tws.startswith("mpdm"):
+                if tws.lower().startswith("mpdm"):
                     template_ws=template_wb[tws]
                     break
                 else:

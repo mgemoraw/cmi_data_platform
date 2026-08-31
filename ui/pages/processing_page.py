@@ -419,12 +419,20 @@ class ProcessingPage(QWidget):
             tpl = self.template_path_field.text()
             if not tpl or not os.path.exists(tpl): return
             from engines.processing_engine import DataProcessingEngine
-            self.engine = DataProcessingEngine(input_folder=inf, template_path=tpl, equipment=self.equipment.currentText().lower())
+            self.engine = DataProcessingEngine(
+                input_folder=inf, 
+                template_path=tpl, 
+                equipment=self.equipment.currentText().lower(),
+            )
+
+
         elif idx == 3:
             tpl = self.template_path_field.text()
             if not tpl or not os.path.exists(tpl): return
             from engines.cleaning_engine import DataCleaningEngine
             self.engine = DataCleaningEngine({'input_folder': inf, 'output_folder': outf, 'template_path': tpl, 'logger': self.log.append, 'progress_callback': self.progress.setValue})
+
+            
         elif idx == 4:
             # Instantiating the integrated AnalysisEngine option dynamically
             from engines.analysis_engine import AnalysisEngine
