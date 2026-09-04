@@ -3,14 +3,14 @@ COLUMN_MAPPINGS = {
     "mpdm": {
         "source_sheet": "mpdm",
         "destination_sheet": "MPDM",
-        "source_start_row": 7,
+        "source_start_row": 8,
         "dest_start_row": 13,
 
         "source_header_mappings": {
-            "date": "A7",
-            "project_code": "B7",
-            "operation": "E7",
-            "equipment_types": "A5",
+            "date": "J6",
+            "project_code": "B6",
+            "operation": "B8",
+            "equipment_types": "E7",
             'equipment': "F7",
         },
         "dest_header_mappings": {
@@ -71,51 +71,51 @@ COLUMN_MAPPINGS = {
         "source_sheet": "dozer",
         "destination_sheet": "Dozer",
 
-        "source_start_row": 7,
+        "source_start_row": 8,
         "dest_start_row": 11,
 
         "header_mappings": {
-            "date": "A7",
-            "project_code": "B7",
-            "data_collector": "C7",
-            "number_of_equipment_types": "D7",
+            "date": "L4",
+            "project_code": "B4",
+            "data_collector": "C4",
+            "number_of_equipment_types": "I4",
         },
 
         "source_header_mappings": {
-            "date": None,
-            "project_code": None,
-            "operation": None,
-            "equipment_types": None,
-            'equipment': None,
+            "date": "L4",
+            "project_code": "B4",
+            "operation": "",
+            "equipment_types": "I4",
+            'equipment': "",
         },
         "dest_header_mappings": {
             "date": "L6",
             "project_code": "C6",
             "operation": None,
             "equipment_types": 'I6',
-            'equipment': None
+            'equipment': ""
         },
 
 
         "column_mappings": {
-            'E': 'B',  # Equipment Tag (Dozer Cyle)
-            'F': 'C',  # Man power
-            'G': 'D',  # Dozer Blade Type
-            'H': 'E',  # Task Type
-            'I': 'F',  # Description
-            'J': 'G',  # Soil Type
-            'K': 'H',  # Blade Height (m)
-            'L': 'I',  # Blade Width (m)
-            'M': 'J',  # Blade Length (m)
-            'N': 'K',  # unit (m3, m, etc)
+            'A': 'B',  # Equipment Tag (Dozer Cyle)
+            'B': 'C',  # Man power
+            'C': 'D',  # Dozer Blade Type
+            'D': 'E',  # Task Type
+            'E': 'F',  # Description
+            'F': 'G',  # Soil Type
+            'G': 'H',  # Blade Height (m)
+            'H': 'I',  # Blade Width (m)
+            'I': 'J',  # Blade Length (m)
+            'J': 'K',  # unit (m3, m, etc)
             #'O': 'L',  # Blade Load (m3, m, etc) - This will be calculated, so we can skip copying this column
-            'P': 'M',  # Cycle Time (seconds)
+            'L': 'M',  # Cycle Time (seconds)
             # 'Q': 'N',
         },
         "custom_fields": {
-            "blade_load":"L",
+            "blade_load":"K",
 
-            "unit": "K",
+            "unit": "J",
         }
     },
 

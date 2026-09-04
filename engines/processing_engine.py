@@ -552,24 +552,24 @@ class DataProcessingEngine:
             if not template_ws:
                 raise Exception("MPDM sheet not found!")
 
-            source_start_row = 7
+            source_start_row = 13
             template_start_row = 13
             row_offset = template_start_row - source_start_row
 
             # Source -> Destination mapping
             column_mapping = {
-                "H": "B",
-                "I": "V",
-                "J": "W",
-                "K": "X",
-                "L": "Y",
-                "M": "Z",
-                "N": "AA",
+                "B": "B",
+                "F": "V",
+                "G": "W",
+                "H": "X",
+                "I": "Y",
+                "J": "Z",
+                "K": "AA",
             }
 
             for row in range(source_start_row, source_ws.max_row + 1):
 
-                source_value = source_ws[f"H{row}"].value
+                source_value = source_ws[f"B{row}"].value
 
                 # Optional skip empty rows
                 if source_value is None:

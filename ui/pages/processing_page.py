@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt, QThread, Signal
 from openpyxl import load_workbook
+from database.data_loader import DataLoader
 
 # Note: Ensure the required win32com import remains available if running on Windows platforms
 if sys.platform == "win32":
@@ -26,6 +27,7 @@ class ExcelMetaWorker(QThread):
     def __init__(self, file_path):
         super().__init__()
         self.file_path = file_path
+        
 
     def run(self):
         try:
@@ -94,6 +96,7 @@ class ProcessingPage(QWidget):
     def __init__(self):
         super().__init__()
         self.active_workspace_path = ""
+        self.data_loader = DataLoader("database/particulars.json")
         self.worker_thread = None  # Reference to track the running thread
         self.init_ui()
 
@@ -146,11 +149,15 @@ class ProcessingPage(QWidget):
         # particular filtering 
         self.particular_form = QFormLayout()
         self.combo_subsector = QComboBox()
-        self.combo_subsector.clear()
+        
         self.combo_subsector.addItems(['Dam', 'Irrigation', 'Water Supply'])
+
+        self.combo_division = QComboBox()
         self.combo_division.clear()
-        # self.combo_subsector.currentIndexChanged.connect(self.update_divisions)
-        # self.combo_division.addItems(self.get_divisions())
+        self.combo_subsector.currentIndexChanged.connect(self.update_divisions)
+        self.combo_division.addItems(
+            self.data_loader.get_divisions(self.combo_subsector.currentText())
+        )
 
         self.combo_division = QComboBox()
         # self.combo_division.currentIndexChanged.connect(self.update_tasks)
@@ -172,6 +179,9 @@ class ProcessingPage(QWidget):
         self.particular_form.addRow("Element:", self.combo_element)
         self.particular_form.addRow("Particular:", self.combo_particular)
 
+        form.addRow(QLabel("Particulars Filtering (Optional):"))
+        form.addRow(self.particular_form)
+    
 
         # Multi-parameters Options
         self.equipment = QComboBox()
@@ -308,24 +318,9 @@ class ProcessingPage(QWidget):
                 self.particulars_data = json.load(f)
 
     def update_divisions(self):
-            self.ui.combo_division.clear()
-            self.ui.combo_division.addItems(self.get_divisions())
-    
-    def get_divisions(self):
-        subsector = self.ui.combo_subsector.currentText()
-    
-        divs = set()
-        for row in self.dirs:
-            
-            if row.get("subsector") == subsector:
-                div = row['division']
-                if int(div) < 10:
-                    div_name = f"Division-0{row['division']}"
-                else:
-                    div_name = f"Division-{row['division']}"
-                
-                divs.add(div_name)
-        return divs
+            self.combo_division.clear()
+            self.combo_division.addItems(self.data_loader.get_divisions(self.combo_subsector.currentText()))
+
 
     def toggle_update_source(self, checked):
         # to toggle update source for cycle time validation
