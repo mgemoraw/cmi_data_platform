@@ -1,0 +1,1064 @@
+[
+    {
+        "No": 1,
+        "PID": "P001",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Earth",
+        "element": "Clearing and garbling ",
+        "particular": "Using Dozers"
+    },
+    {
+        "No": 2,
+        "PID": "P002",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Earth",
+        "element": "Clearing and garbling ",
+        "particular": "Using Motor Graders  "
+    },
+    {
+        "No": 3,
+        "PID": "P003",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Earth",
+        "element": "Clearing and garbling ",
+        "particular": "labours "
+    },
+    {
+        "No": 4,
+        "PID": "P004",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Earth",
+        "element": "Excavation ",
+        "particular": "Using Dozers"
+    },
+    {
+        "No": 5,
+        "PID": "P005",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Earth",
+        "element": "Excavation ",
+        "particular": "Hydraulic Excavator"
+    },
+    {
+        "No": 6,
+        "PID": "P006",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Earth",
+        "element": "Mixing ",
+        "particular": "Using Dozers"
+    },
+    {
+        "No": 7,
+        "PID": "P007",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Earth",
+        "element": "Mixing ",
+        "particular": "Hydraulic Excavator"
+    },
+    {
+        "No": 8,
+        "PID": "P008",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Earth",
+        "element": "Transportation  ",
+        "particular": "Tippers with Loader"
+    },
+    {
+        "No": 9,
+        "PID": "P009",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Earth",
+        "element": "Transportation  ",
+        "particular": "Tippers with Excavator"
+    },
+    {
+        "No": 10,
+        "PID": "P010",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Earth",
+        "element": "Transportation  ",
+        "particular": "Tippers with Backhoe Excavator"
+    },
+    {
+        "No": 11,
+        "PID": "P011",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Rock",
+        "element": "Soft rock Excavation",
+        "particular": "Dozer with ripper"
+    },
+    {
+        "No": 12,
+        "PID": "P012",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Rock",
+        "element": "Soft rock Excavation",
+        "particular": "Hydraulic Excavator"
+    },
+    {
+        "No": 13,
+        "PID": "P013",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Rock",
+        "element": "Hard rock Excavation",
+        "particular": "Hydraulic Excavator with Jack-Hammer and Rock Bucket"
+    },
+    {
+        "No": 14,
+        "PID": "P014",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Rock",
+        "element": "Hard rock Excavation",
+        "particular": "Drilling machines with controlled Blasting "
+    },
+    {
+        "No": 15,
+        "PID": "P015",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Rock",
+        "element": "Hard rock Excavation",
+        "particular": "Pneumatic Hammers"
+    },
+    {
+        "No": 16,
+        "PID": "P016",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Rock",
+        "element": "Aggregate production",
+        "particular": "Tipper and Hydraulic Excavator with Crushing plant"
+    },
+    {
+        "No": 17,
+        "PID": "P017",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Rock",
+        "element": "Aggregate production",
+        "particular": "Tipper, Hydraulic Excavator and labor with crushing plant"
+    },
+    {
+        "No": 18,
+        "PID": "P018",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Rock",
+        "element": "Transportation",
+        "particular": "Tipper and Hydraulic Excavator"
+    },
+    {
+        "No": 19,
+        "PID": "P019",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Rock",
+        "element": "Transportation",
+        "particular": "Tipper and Loader"
+    },
+    {
+        "No": 20,
+        "PID": "P020",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Roller-compacted concrete (RCC)",
+        "element": "Mixing",
+        "particular": "RCC Dam Batching Plant"
+    },
+    {
+        "No": 21,
+        "PID": "P021",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Roller-compacted concrete (RCC)",
+        "element": "Transportation",
+        "particular": "Conveyor and Vehicle(Tippers)"
+    },
+    {
+        "No": 22,
+        "PID": "P022",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Roller-compacted concrete (RCC)",
+        "element": "Transportation",
+        "particular": "Conveyor"
+    },
+    {
+        "No": 23,
+        "PID": "P023",
+        "subsector": "Dam",
+        "division": 1,
+        "task": "Roller-compacted concrete (RCC)",
+        "element": "Transportation",
+        "particular": "Buckets"
+    },
+    {
+        "No": 24,
+        "PID": "P024",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Earth",
+        "element": "     Foundation",
+        "particular": "Dozer"
+    },
+    {
+        "No": 25,
+        "PID": "P025",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Earth",
+        "element": "     Foundation",
+        "particular": "Hydraulic Excavator"
+    },
+    {
+        "No": 26,
+        "PID": "P026",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Earth",
+        "element": "Abutment",
+        "particular": "Dozer"
+    },
+    {
+        "No": 27,
+        "PID": "P027",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Earth",
+        "element": "Abutment",
+        "particular": "Hydraulic Excavator"
+    },
+    {
+        "No": 28,
+        "PID": "P028",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Soft Rock",
+        "element": "Foundation",
+        "particular": "Dozer with ripper"
+    },
+    {
+        "No": 29,
+        "PID": "P029",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Soft Rock",
+        "element": "Foundation",
+        "particular": "Hydraulic Excavator"
+    },
+    {
+        "No": 30,
+        "PID": "P030",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Soft Rock",
+        "element": "Abutment",
+        "particular": "Dozer with ripper"
+    },
+    {
+        "No": 31,
+        "PID": "P031",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Soft Rock",
+        "element": "Abutment",
+        "particular": "Hydraulic Excavator"
+    },
+    {
+        "No": 32,
+        "PID": "P032",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Hard Rock",
+        "element": "Foundation",
+        "particular": "Hydraulic Excavator with Jack-Hammer and Rock Bucket"
+    },
+    {
+        "No": 33,
+        "PID": "P033",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Hard Rock",
+        "element": "Foundation",
+        "particular": "Drilling machines, controlled Blasting and Hydraulic Excavator with Rock Bucket"
+    },
+    {
+        "No": 34,
+        "PID": "P034",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Hard Rock",
+        "element": "Foundation",
+        "particular": "Pneumatic Hammers and Hydraulic Excavator with Rock Bucket"
+    },
+    {
+        "No": 35,
+        "PID": "P035",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Hard Rock",
+        "element": "Abutment",
+        "particular": "Hydraulic Excavator with Jack-Hammer and Rock Bucket"
+    },
+    {
+        "No": 36,
+        "PID": "P036",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Hard Rock",
+        "element": "Abutment",
+        "particular": "Drilling machines, controlled Blasting and Hydraulic Excavator with Rock Bucket"
+    },
+    {
+        "No": 37,
+        "PID": "P037",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Excavation on Hard Rock",
+        "element": "Abutment",
+        "particular": "Pneumatic Hammers and Hydraulic Excavator with Rock Bucket"
+    },
+    {
+        "No": 38,
+        "PID": "P038",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Consolidating(Contact Grouting) at Dam Sit",
+        "element": "Drilling",
+        "particular": "Drilling Rig"
+    },
+    {
+        "No": 39,
+        "PID": "P039",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Consolidating(Contact Grouting) at Dam Sit",
+        "element": "Grouting",
+        "particular": "Grout plant (mixer and agitator and pump all in one)"
+    },
+    {
+        "No": 40,
+        "PID": "P040",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Consolidating(Contact Grouting) at Dam Sit",
+        "element": "Grouting",
+        "particular": "Using separate equipment's combined (grout mixer, or grout agitator, or grout mixer and agitator, or grout pump)"
+    },
+    {
+        "No": 41,
+        "PID": "P041",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Curtain Grouting at Dam Sit",
+        "element": "Drilling",
+        "particular": "Drilling Rig"
+    },
+    {
+        "No": 42,
+        "PID": "P042",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Curtain Grouting at Dam Sit",
+        "element": "Grouting",
+        "particular": "Grout plant (mixer and agitator and pump all in one)"
+    },
+    {
+        "No": 43,
+        "PID": "P043",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Curtain Grouting at Dam Sit",
+        "element": "Grouting",
+        "particular": "Using separate equipment\u0092s combined (grout mixer, or grout agitator, or grout mixer and agitator, or grout pump)"
+    },
+    {
+        "No": 44,
+        "PID": "P044",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Curtain Grouting at abutments",
+        "element": "Drilling",
+        "particular": "Drilling Rig"
+    },
+    {
+        "No": 45,
+        "PID": "P045",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Curtain Grouting at abutments",
+        "element": "Grouting",
+        "particular": "Grout plant (mixer and agitator and pump all in one)"
+    },
+    {
+        "No": 46,
+        "PID": "P046",
+        "subsector": "Dam",
+        "division": 2,
+        "task": "Curtain Grouting at abutments",
+        "element": "Grouting",
+        "particular": "Using separate equipment's combined (grout mixer, or grout agitator, or grout mixer and agitator, or grout pump)"
+    },
+    {
+        "No": 47,
+        "PID": "P047",
+        "subsector": "Dam",
+        "division": 3,
+        "task": "Zoned Rock Fill dam",
+        "element": "Impervious Clay core",
+        "particular": "Motor Grader, Sheep Foot and Smooth drum vibratory roller"
+    },
+    {
+        "No": 48,
+        "PID": "P048",
+        "subsector": "Dam",
+        "division": 3,
+        "task": "Zoned Rock Fill dam",
+        "element": "Rockfill Shell at flanks of core",
+        "particular": "Dozer, Sheep Foot and Smooth drum vibratory roller"
+    },
+    {
+        "No": 49,
+        "PID": "P049",
+        "subsector": "Dam",
+        "division": 3,
+        "task": "Zoned earth dam",
+        "element": "Impervious Clay core",
+        "particular": "Motor Grader, Sheep Foot and Smooth drum vibratory roller"
+    },
+    {
+        "No": 50,
+        "PID": "P050",
+        "subsector": "Dam",
+        "division": 3,
+        "task": "Zoned earth dam",
+        "element": "Shell",
+        "particular": "Motor Grader, Sheep Foot and Smooth drum vibratory roller"
+    },
+    {
+        "No": 51,
+        "PID": "P051",
+        "subsector": "Dam",
+        "division": 3,
+        "task": "Zoned earth dam",
+        "element": "Rip-rap",
+        "particular": "Hydraulic Excavator"
+    },
+    {
+        "No": 52,
+        "PID": "P052",
+        "subsector": "Dam",
+        "division": 3,
+        "task": "Diaphragm type Rock Fill dam",
+        "element": "Asphalt Concrete Cores",
+        "particular": "Asphalt Concrete Cores"
+    },
+    {
+        "No": 53,
+        "PID": "P053",
+        "subsector": "Dam",
+        "division": 3,
+        "task": "Diaphragm type Rock Fill dam",
+        "element": "Rockfill Shell at flanks of core",
+        "particular": "Dozer, Smooth drum vibratory roller"
+    },
+    {
+        "No": 54,
+        "PID": "P054",
+        "subsector": "Dam",
+        "division": 3,
+        "task": "   Homogeneous RCC dam",
+        "element": "Roller compacted concrete",
+        "particular": "Bull Dozers, asphalt pavers and vibratory rollers"
+    },
+    {
+        "No": 55,
+        "PID": "P055",
+        "subsector": "Dam",
+        "division": 4,
+        "task": "Excavation",
+        "element": "All Types of Soil",
+        "particular": "The values of data from the Dam foundation can be adopted, to optimize resource"
+    },
+    {
+        "No": 56,
+        "PID": "P056",
+        "subsector": "Dam",
+        "division": 4,
+        "task": "Curtain grouting",
+        "element": "All Types",
+        "particular": "All Types"
+    },
+    {
+        "No": 57,
+        "PID": "P057",
+        "subsector": "Dam",
+        "division": 4,
+        "task": "Spillway Wall",
+        "element": "Concrete",
+        "particular": "All type methods"
+    },
+    {
+        "No": 58,
+        "PID": "P058",
+        "subsector": "Dam",
+        "division": 4,
+        "task": "Spillway Wall",
+        "element": "Masonry",
+        "particular": "All type methods"
+    },
+    {
+        "No": 59,
+        "PID": "P059",
+        "subsector": "Dam",
+        "division": 5,
+        "task": "Excavation",
+        "element": "All Types of Soil",
+        "particular": "The values of data from the Dam foundation can be adopted, to optimize resource"
+    },
+    {
+        "No": 60,
+        "PID": "P060",
+        "subsector": "Dam",
+        "division": 5,
+        "task": "Curtain grouting",
+        "element": "All Types",
+        "particular": "All Types"
+    },
+    {
+        "No": 61,
+        "PID": "P061",
+        "subsector": "Dam",
+        "division": 5,
+        "task": "Weir Wall",
+        "element": "Concrete",
+        "particular": "All type methods"
+    },
+    {
+        "No": 62,
+        "PID": "P062",
+        "subsector": "Dam",
+        "division": 5,
+        "task": "Weir Wall",
+        "element": "Masonry",
+        "particular": "All type methods"
+    },
+    {
+        "No": 63,
+        "PID": "P063",
+        "subsector": "Dam",
+        "division": 5,
+        "task": "Weir Wall",
+        "element": "Cyclopean Concrete",
+        "particular": "All type methods"
+    },
+    {
+        "No": 64,
+        "PID": "P064",
+        "subsector": "Dam",
+        "division": 6,
+        "task": "Hauling away and disposing",
+        "element": "Hauling",
+        "particular": "Tippers with Loader"
+    },
+    {
+        "No": 65,
+        "PID": "P065",
+        "subsector": "Dam",
+        "division": 6,
+        "task": "Hauling away and disposing",
+        "element": "Spreading",
+        "particular": "Motor Grader"
+    },
+    {
+        "No": 66,
+        "PID": "P066",
+        "subsector": "Irrigation",
+        "division": 5,
+        "task": "Earth",
+        "element": "Clearing ",
+        "particular": "Dozers"
+    },
+    {
+        "No": 67,
+        "PID": "P067",
+        "subsector": "Irrigation",
+        "division": 5,
+        "task": "Earth",
+        "element": "Clearing ",
+        "particular": "Motor Graders  "
+    },
+    {
+        "No": 68,
+        "PID": "P068",
+        "subsector": "Irrigation",
+        "division": 5,
+        "task": "Earth",
+        "element": "Clearing ",
+        "particular": "labours "
+    },
+    {
+        "No": 69,
+        "PID": "P069",
+        "subsector": "Irrigation",
+        "division": 5,
+        "task": "Earth",
+        "element": "Excavation",
+        "particular": "Dozers"
+    },
+    {
+        "No": 70,
+        "PID": "P070",
+        "subsector": "Irrigation",
+        "division": 5,
+        "task": "Earth",
+        "element": "Excavation",
+        "particular": "Hydraulic Excavator"
+    },
+    {
+        "No": 71,
+        "PID": "P071",
+        "subsector": "Irrigation",
+        "division": 5,
+        "task": "Earth",
+        "element": "Mixing ",
+        "particular": "Dozers"
+    },
+    {
+        "No": 72,
+        "PID": "P072",
+        "subsector": "Irrigation",
+        "division": 5,
+        "task": "Earth",
+        "element": "Mixing ",
+        "particular": "Hydraulic Excavator"
+    },
+    {
+        "No": 73,
+        "PID": "P073",
+        "subsector": "Irrigation",
+        "division": 5,
+        "task": "Earth",
+        "element": "Transportation  ",
+        "particular": "Tippers with Loader"
+    },
+    {
+        "No": 74,
+        "PID": "P074",
+        "subsector": "Irrigation",
+        "division": 5,
+        "task": "Earth",
+        "element": "Transportation  ",
+        "particular": "Tippers with Excavator"
+    },
+    {
+        "No": 75,
+        "PID": "P075",
+        "subsector": "Irrigation",
+        "division": 5,
+        "task": "Earth",
+        "element": "Transportation  ",
+        "particular": "Tippers with Backhoe Excavator"
+    },
+    {
+        "No": 76,
+        "PID": "P076",
+        "subsector": "Irrigation",
+        "division": 6,
+        "task": "Foundation Preparation",
+        "element": "Site Clearing",
+        "particular": "Dozers"
+    },
+    {
+        "No": 77,
+        "PID": "P077",
+        "subsector": "Irrigation",
+        "division": 6,
+        "task": "Foundation Preparation",
+        "element": "Site Clearing",
+        "particular": "Motor Graders"
+    },
+    {
+        "No": 78,
+        "PID": "P078",
+        "subsector": "Irrigation",
+        "division": 6,
+        "task": "Foundation Preparation",
+        "element": "Site Clearing",
+        "particular": "labours"
+    },
+    {
+        "No": 79,
+        "PID": "P079",
+        "subsector": "Irrigation",
+        "division": 6,
+        "task": "Foundation Preparation",
+        "element": "Stripping",
+        "particular": "Dozers"
+    },
+    {
+        "No": 80,
+        "PID": "P080",
+        "subsector": "Irrigation",
+        "division": 6,
+        "task": "Foundation Preparation",
+        "element": "Stripping",
+        "particular": "Motor Graders"
+    },
+    {
+        "No": 81,
+        "PID": "P081",
+        "subsector": "Irrigation",
+        "division": 6,
+        "task": "Foundation Preparation",
+        "element": "Heavy Reshape and Compaction",
+        "particular": "Motor Graders, Sheep Foot and Smooth drum vibratory roller, and Water Truck"
+    },
+    {
+        "No": 82,
+        "PID": "P082",
+        "subsector": "Irrigation",
+        "division": 7,
+        "task": "Embankment",
+        "element": "Impervious Clay ",
+        "particular": "Motor Grader, Sheep Foot and Smooth drum vibratory roller"
+    },
+    {
+        "No": 83,
+        "PID": "P083",
+        "subsector": "Irrigation",
+        "division": 7,
+        "task": "Embankment",
+        "element": "Top Gravel wearing course",
+        "particular": "Motor Grader, Smooth drum vibratory roller"
+    },
+    {
+        "No": 84,
+        "PID": "P084",
+        "subsector": "Irrigation",
+        "division": 8,
+        "task": "Canal Section Opening ",
+        "element": "In Soft Material ",
+        "particular": "Motor Grader with labors "
+    },
+    {
+        "No": 85,
+        "PID": "P085",
+        "subsector": "Irrigation",
+        "division": 8,
+        "task": "Canal Section Opening ",
+        "element": "In Soft Material ",
+        "particular": "Excavator with labors"
+    },
+    {
+        "No": 86,
+        "PID": "P086",
+        "subsector": "Irrigation",
+        "division": 8,
+        "task": "Canal Section Opening ",
+        "element": "In Soft Material ",
+        "particular": "Labours only"
+    },
+    {
+        "No": 87,
+        "PID": "P087",
+        "subsector": "Irrigation",
+        "division": 8,
+        "task": "Canal Section Opening ",
+        "element": "In Fill material",
+        "particular": "Motor Grader with labours "
+    },
+    {
+        "No": 88,
+        "PID": "P088",
+        "subsector": "Irrigation",
+        "division": 8,
+        "task": "Canal Section Opening ",
+        "element": "In Fill material",
+        "particular": "Excavator with labours"
+    },
+    {
+        "No": 89,
+        "PID": "P089",
+        "subsector": "Irrigation",
+        "division": 8,
+        "task": "Canal Section Opening ",
+        "element": "In Fill material",
+        "particular": "Labours only"
+    },
+    {
+        "No": 90,
+        "PID": "P090",
+        "subsector": "Irrigation",
+        "division": 8,
+        "task": "Lining  ",
+        "element": "Concrete",
+        "particular": "Stationary mixer with labours"
+    },
+    {
+        "No": 91,
+        "PID": "P091",
+        "subsector": "Irrigation",
+        "division": 8,
+        "task": "Lining  ",
+        "element": "Concrete",
+        "particular": "Track mixer with labours"
+    },
+    {
+        "No": 92,
+        "PID": "P092",
+        "subsector": "Irrigation",
+        "division": 8,
+        "task": "Lining  ",
+        "element": "Geotextile membrane",
+        "particular": "Welding machine with Labours"
+    },
+    {
+        "No": 93,
+        "PID": "P093",
+        "subsector": "Irrigation",
+        "division": 9,
+        "task": "Turnout  ",
+        "element": "Turnout",
+        "particular": "All types"
+    },
+    {
+        "No": 94,
+        "PID": "P094",
+        "subsector": "Irrigation",
+        "division": 9,
+        "task": "Drop Structures ",
+        "element": "All",
+        "particular": "All types"
+    },
+    {
+        "No": 95,
+        "PID": "P095",
+        "subsector": "Irrigation",
+        "division": 10,
+        "task": "Hauling away and disposing",
+        "element": "All",
+        "particular": "The values of data from the Dam Division can be adopted, to optimize resource"
+    },
+    {
+        "No": 96,
+        "PID": "P096",
+        "subsector": "WaterSupply",
+        "division": 11,
+        "task": "Excavation true to line and grade ",
+        "element": "In Earth  ",
+        "particular": "Labour force "
+    },
+    {
+        "No": 97,
+        "PID": "P097",
+        "subsector": "WaterSupply",
+        "division": 11,
+        "task": "Excavation true to line and grade ",
+        "element": "In Earth  ",
+        "particular": "Backhoe (Excavator) and Labour force"
+    },
+    {
+        "No": 98,
+        "PID": "P098",
+        "subsector": "WaterSupply",
+        "division": 11,
+        "task": "Excavation true to line and grade ",
+        "element": "In Soft Rock ",
+        "particular": "Hydraulic Excavator and Labour force"
+    },
+    {
+        "No": 99,
+        "PID": "P099",
+        "subsector": "WaterSupply",
+        "division": 11,
+        "task": "Excavation true to line and grade ",
+        "element": "In Hard Rock ",
+        "particular": "Hydraulic Excavator and Labour force"
+    },
+    {
+        "No": 100,
+        "PID": "P100",
+        "subsector": "WaterSupply",
+        "division": 11,
+        "task": "Pipe Laying ",
+        "element": "DCI",
+        "particular": "All Types of size and method of laying"
+    },
+    {
+        "No": 101,
+        "PID": "P101",
+        "subsector": "WaterSupply",
+        "division": 11,
+        "task": "Pipe Laying ",
+        "element": "UPVC",
+        "particular": "All Types of size and method of laying"
+    },
+    {
+        "No": 102,
+        "PID": "P102",
+        "subsector": "WaterSupply",
+        "division": 11,
+        "task": "Pipe Laying ",
+        "element": "HDPE",
+        "particular": "All Types of size and method of laying"
+    },
+    {
+        "No": 103,
+        "PID": "P103",
+        "subsector": "WaterSupply",
+        "division": 11,
+        "task": "Pipe Connection(Jointing)",
+        "element": "DCI",
+        "particular": "All Types of size and method of connection"
+    },
+    {
+        "No": 104,
+        "PID": "P104",
+        "subsector": "WaterSupply",
+        "division": 11,
+        "task": "Pipe Connection(Jointing)",
+        "element": "UPVC",
+        "particular": "All Types of size and method of connection"
+    },
+    {
+        "No": 105,
+        "PID": "P105",
+        "subsector": "WaterSupply",
+        "division": 11,
+        "task": "Pipe Connection(Jointing)",
+        "element": "HDPE",
+        "particular": "All Types of size and method of connection"
+    },
+    {
+        "No": 106,
+        "PID": "P106",
+        "subsector": "WaterSupply",
+        "division": 11,
+        "task": "Back filling the trenches",
+        "element": "For All types of Pipes",
+        "particular": "Backhoe, Plate Compactor with Labours "
+    },
+    {
+        "No": 107,
+        "PID": "P107",
+        "subsector": "WaterSupply",
+        "division": 12,
+        "task": "Aerator ",
+        "element": "Cascade Type",
+        "particular": "All"
+    },
+    {
+        "No": 108,
+        "PID": "P108",
+        "subsector": "WaterSupply",
+        "division": 12,
+        "task": "Aerator ",
+        "element": "Others",
+        "particular": "All"
+    },
+    {
+        "No": 109,
+        "PID": "P109",
+        "subsector": "WaterSupply",
+        "division": 12,
+        "task": "Flash Mixing Tank",
+        "element": "All type",
+        "particular": "All"
+    },
+    {
+        "No": 110,
+        "PID": "P110",
+        "subsector": "WaterSupply",
+        "division": 12,
+        "task": "Flocculation Tank",
+        "element": "All type",
+        "particular": "All"
+    },
+    {
+        "No": 111,
+        "PID": "P111",
+        "subsector": "WaterSupply",
+        "division": 12,
+        "task": "Clarifier (Conventional)",
+        "element": "All type",
+        "particular": "All"
+    },
+    {
+        "No": 112,
+        "PID": "P112",
+        "subsector": "WaterSupply",
+        "division": 12,
+        "task": "Rapid Gravity Sand Filter",
+        "element": "All type",
+        "particular": "All"
+    },
+    {
+        "No": 113,
+        "PID": "P113",
+        "subsector": "WaterSupply",
+        "division": 12,
+        "task": "Chlorine Contact Tank",
+        "element": "All type",
+        "particular": "All"
+    },
+    {
+        "No": 114,
+        "PID": "P114",
+        "subsector": "WaterSupply",
+        "division": 13,
+        "task": "Excavation",
+        "element": "Excavation",
+        "particular": "All types of soil and as per depth of excavation"
+    },
+    {
+        "No": 115,
+        "PID": "P115",
+        "subsector": "WaterSupply",
+        "division": 13,
+        "task": "Concrete",
+        "element": "Formwork",
+        "particular": "For All types of material and method"
+    },
+    {
+        "No": 116,
+        "PID": "P116",
+        "subsector": "WaterSupply",
+        "division": 13,
+        "task": "Concrete",
+        "element": "Reinforcement",
+        "particular": "For All types of bar size"
+    },
+    {
+        "No": 117,
+        "PID": "P117",
+        "subsector": "WaterSupply",
+        "division": 13,
+        "task": "Concrete",
+        "element": "Concrete casting",
+        "particular": "For All types of method "
+    },
+    {
+        "No": 118,
+        "PID": "P118",
+        "subsector": "WaterSupply",
+        "division": 13,
+        "task": "Back fill with selected material",
+        "element": "Concrete casting",
+        "particular": "Around foundation "
+    }
+]

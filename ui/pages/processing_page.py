@@ -143,6 +143,36 @@ class ProcessingPage(QWidget):
         out_lay.addWidget(btn_out)
         form.addRow("Output Data Destination Path:", out_widget)
 
+        # particular filtering 
+        self.particular_form = QFormLayout()
+        self.combo_subsector = QComboBox()
+        self.combo_subsector.clear()
+        self.combo_subsector.addItems(['Dam', 'Irrigation', 'Water Supply'])
+        self.combo_division.clear()
+        # self.combo_subsector.currentIndexChanged.connect(self.update_divisions)
+        # self.combo_division.addItems(self.get_divisions())
+
+        self.combo_division = QComboBox()
+        # self.combo_division.currentIndexChanged.connect(self.update_tasks)
+
+        self.combo_taskName = QComboBox()
+        # self.combo_taskName.addItems(self.get_tasks())
+        # self.combo_taskName.currentIndexChanged.connect(self.update_elements)
+
+        self.combo_element = QComboBox()
+        # self.combo_element.addItems(self.get_elements())
+        # self.combo_element.currentIndexChanged.connect(self.update_particulars)
+
+        self.combo_particular = QComboBox()
+        # self.combo_particular.addItems(self.get_particulars())
+
+        self.particular_form.addRow("Subsector:", self.combo_subsector)
+        self.particular_form.addRow("Division:", self.combo_division)
+        self.particular_form.addRow("Task Name:", self.combo_taskName)
+        self.particular_form.addRow("Element:", self.combo_element)
+        self.particular_form.addRow("Particular:", self.combo_particular)
+
+
         # Multi-parameters Options
         self.equipment = QComboBox()
         self.equipment.addItems(["Excavator", "Dozer", "Loader", "Motor Grader", "Roller", "Truck", "Labor"])
@@ -208,12 +238,12 @@ class ProcessingPage(QWidget):
         # --- Dynamic Analysis Specific Custom Row Form Parameters ---
         self.particular_field = QLineEdit()
         self.particular_field.setPlaceholderText("e.g., Site Clearing using Dozer")
-        self.particular_lbl = QLabel("Analysis Particular Work Item:")
+        self.particular_lbl = QLabel("Activity Description:")
         form.addRow(self.particular_lbl, self.particular_field)
 
         self.activity_field = QLineEdit()
         self.activity_field.setPlaceholderText("e.g., Site clearing operations")
-        self.activity_lbl = QLabel("Analysis Activity Process Title:")
+        self.activity_lbl = QLabel("Activity /Operation:")
         form.addRow(self.activity_lbl, self.activity_field)
 
         left_layout.addLayout(form)
@@ -269,6 +299,33 @@ class ProcessingPage(QWidget):
         
         self.toggle_inputs()
 
+    def _load_base_data(self):
+        # Load particulars directories from JSON
+        import json
+        json_path = Path(__file__).parent.parent / "database" / "particulars.json"
+        if json_path.exists():
+            with open(json_path, "r", encoding="utf-8") as f:
+                self.particulars_data = json.load(f)
+
+    def update_divisions(self):
+            self.ui.combo_division.clear()
+            self.ui.combo_division.addItems(self.get_divisions())
+    
+    def get_divisions(self):
+        subsector = self.ui.combo_subsector.currentText()
+    
+        divs = set()
+        for row in self.dirs:
+            
+            if row.get("subsector") == subsector:
+                div = row['division']
+                if int(div) < 10:
+                    div_name = f"Division-0{row['division']}"
+                else:
+                    div_name = f"Division-{row['division']}"
+                
+                divs.add(div_name)
+        return divs
 
     def toggle_update_source(self, checked):
         # to toggle update source for cycle time validation

@@ -137,7 +137,8 @@ class OutputData:
 class AnalysisEngine:
     def __init__(self, data_folder, template_path=None, equipment=None, particular=None, activity=None, logger=None, progress_callback=None, is_cancelled_callback=None):
         self.source_folder = Path(data_folder)
-        self.output_folder = self.source_folder / "output"
+        # self.output_folder = self.source_folder / "output"
+        self.output_folder = self.source_folder.parent
         self.template_path = Path(template_path) if template_path else None
         self.equipment = equipment
         self.particular = particular if particular else f"{equipment} Work Description"
@@ -145,7 +146,7 @@ class AnalysisEngine:
         
         self.logger = logger
         self.progress_callback = progress_callback
-        self.output_folder.mkdir(exist_ok=True)
+        # self.output_folder.mkdir(exist_ok=True)
         self._is_cancelled = False
         self.is_cancelled_callback = None
 
@@ -190,13 +191,20 @@ class AnalysisEngine:
                 'ideal_cycle_variability': "Q",
                 'overall_cycle_variability': "R",
             }, 
-
-            'roller': {
+            'motor grader': {
                 'productivity': "N",
                 'ideal_productivity': "O",
                 'overall_method_productivity': "P",
                 'ideal_cycle_variability': "Q",
                 'overall_cycle_variability': "R",
+            }, 
+
+            'roller': {
+                'productivity': "L",
+                'ideal_productivity': "M",
+                'overall_method_productivity': "N",
+                'ideal_cycle_variability': "O",
+                'overall_cycle_variability': "P",
             }
             # Easily add 'roller', 'truck', 'labor' column rules here!
         }
@@ -250,9 +258,14 @@ class AnalysisEngine:
         log_entries = []
         wb = load_workbook(filename=file_path, data_only=True)
         
-        if equipment_sheet_name not in wb.sheetnames or mpdm_sheet_name not in wb.sheetnames:
+        if equipment_sheet_name not in wb.sheetnames:
             wb.close()
-            return f"❌ Missing required evaluation logs sheet nodes in workbook. Expected: '{equipment_sheet_name}' and '{mpdm_sheet_name}'"
+            return f"❌ Missing required evaluation logs sheet nodes in workbook. Expected: '{equipment_sheet_name}'"
+
+        if mpdm_sheet_name not in wb.sheetnames:
+            wb.close()
+            return f"❌ Missing required evaluation logs sheet nodes in workbook. Expected: '{mpdm_sheet_name}'"
+
 
         eq_ws = wb[equipment_sheet_name]
         mpdm_ws = wb[mpdm_sheet_name]
@@ -281,7 +294,9 @@ class AnalysisEngine:
         wb.close()
 
         if log_entries:
-            log_filename = self.output_folder / f"PreAnalysis_Mismatch_Log_{Path(file_path).stem}.txt"
+            log_folder = self.output_folder/"logs"
+            log_folder.mkdir(exist_ok=True)
+            log_filename = log_folder / f"PreAnalysis_Mismatch_Log_{Path(file_path).stem}.txt"
             with open(log_filename, "w", encoding="utf-8") as log_file:
                 log_file.write(f"=== CMI PROCESS STRUCTURAL MISMATCH AUDIT RECORD ===\n")
                 log_file.write(f"Target Source Workbook: {Path(file_path).name}\n")
@@ -325,15 +340,33 @@ class AnalysisEngine:
 
             try:
                 wb = load_workbook(filename=full_path, data_only=True)
-                if self.equipment.title() in wb.sheetnames:
-                    sheet_name = self.equipment.title()
-                else:
-                    sheet_name = f'{self.equipment.title()}1'
+                sheetnames = wb.sheetnames
+                sheet_name = None
+                mpdm_sheetname = None
+                for sheetname in wb.sheetnames:
+                    if self.equipment.lower() in sheetname.lower():
+                        sheet_name = sheetname
+                    elif "mpdm" in sheetname.lower():
+                        mpdm_sheet_name = sheetname
+                    else:
+                        break
+                # else:
+                #     raise ValueError(f"⚠️ No matching equipment/mpdm sheet found for '{self.equipment}' in workbook {file}.")
+
+                if mpdm_sheet_name is None:
+                    raise ValueError(f"⚠️ No matching MPDM sheet found in workbook {file}.")
+                if sheet_name is None:
+                    raise ValueError(f"⚠️ No matching equipment sheet found for '{self.equipment}' in workbook {file}.")
+                
+                # if self.equipment.title() in wb.sheetnames:
+                #     sheet_name = self.equipment.title()
+                # else:
+                #     sheet_name = f'{self.equipment.title()}1'
                 
 
                 # Execute dynamic pre-analysis sheet audit checklist
                 self._log(f"🔬 Auditing validation synchronization matches for: {file}")
-                audit_summary = self.run_preanalysis_check(full_path, sheet_name, "MPDM")
+                audit_summary = self.run_preanalysis_check(full_path, sheet_name, mpdm_sheet_name)
                 self._log(f"[PRE-ANALYSIS]: {audit_summary}")
 
                 if sheet_name not in wb.sheetnames:
@@ -458,6 +491,19 @@ class AnalysisEngine:
             if hasattr(m6, "strftime"):
                 return m6.strftime("%Y-%m-%d")
             return str(m6)
+
+        elif l6 is not None and self.equipment.lower() == 'roller':
+            # If Excel already parsed it as a datetime object, format it nicely
+            if hasattr(l6, "strftime"):
+                return l6.strftime("%Y-%m-%d")
+            return str(l6)
+
+        elif n6 is not None and "grader" in self.equipment.lower() :
+            # If Excel already parsed it as a datetime object, format it nicely
+            if hasattr(n6, "strftime"):
+                return n6.strftime("%Y-%m-%d")
+            return str(n6)
+          
 
         # Case 3: Completely empty fallback
         return "N/A"
