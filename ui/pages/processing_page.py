@@ -151,27 +151,29 @@ class ProcessingPage(QWidget):
         self.combo_subsector = QComboBox()
         
         self.combo_subsector.addItems(['Dam', 'Irrigation', 'Water Supply'])
-
-        self.combo_division = QComboBox()
-        self.combo_division.clear()
         self.combo_subsector.currentIndexChanged.connect(self.update_divisions)
-        self.combo_division.addItems(
-            self.data_loader.get_divisions(self.combo_subsector.currentText())
-        )
-
+        
         self.combo_division = QComboBox()
-        # self.combo_division.currentIndexChanged.connect(self.update_tasks)
+        self.update_divisions()
+        # self.combo_division.addItems(self.data_loader.get_divisions(self.combo_subsector.currentText()))
+        # self.combo_division.clear()
+        self.combo_division.currentIndexChanged.connect(self.update_tasks)
 
         self.combo_taskName = QComboBox()
-        # self.combo_taskName.addItems(self.get_tasks())
-        # self.combo_taskName.currentIndexChanged.connect(self.update_elements)
+        # self.combo_taskName.addItems(self.data_loader.get_tasks())
+        self.update_tasks()
+        self.combo_taskName.currentIndexChanged.connect(self.update_elements)
 
         self.combo_element = QComboBox()
-        # self.combo_element.addItems(self.get_elements())
-        # self.combo_element.currentIndexChanged.connect(self.update_particulars)
+        # self.combo_element.addItems(self.data_loader.get_elements())
+        self.update_elements()
+        self.combo_element.currentIndexChanged.connect(self.update_particulars)
 
         self.combo_particular = QComboBox()
-        # self.combo_particular.addItems(self.get_particulars())
+        # self.combo_particular.addItems(self.data_loader.get_particulars())
+        self.combo_particular.addItems(self.data_loader.get_all_particulars())
+        # self.update_particulars()
+
 
         self.particular_form.addRow("Subsector:", self.combo_subsector)
         self.particular_form.addRow("Division:", self.combo_division)
@@ -319,8 +321,34 @@ class ProcessingPage(QWidget):
 
     def update_divisions(self):
             self.combo_division.clear()
-            self.combo_division.addItems(self.data_loader.get_divisions(self.combo_subsector.currentText()))
+            sector = self.combo_subsector.currentText().replace(" ", "")
+            self.combo_division.addItems(self.data_loader.get_divisions(sector))
 
+    def update_tasks(self):
+        self.combo_taskName.clear()
+        sector = self.combo_subsector.currentText().replace(" ", "")
+        self.combo_taskName.addItems(self.data_loader.get_tasks(sector, self.combo_division.currentText()))
+        # print(self.combo_subsector.currentText(), self.combo_division.currentText())
+
+    def update_elements(self):
+        self.combo_element.clear()
+        sector = self.combo_subsector.currentText().replace(" ", "")
+        self.combo_element.addItems(self.data_loader.get_elements(sector, self.combo_division.currentText(), self.combo_taskName.currentText()))
+
+    def update_particulars(self):
+        self.combo_particular.clear()
+        sector = self.combo_subsector.currentText().replace(" ", "")
+        self.combo_particular.addItems(self.data_loader.get_particulars(sector, self.combo_division.currentText(), self.combo_taskName.currentText(), self.combo_element.currentText()))
+
+    def get_selected_particulars(self):
+        return {
+            "subsector": self.combo_subsector.currentText(),
+            "division": self.combo_division.currentText(),
+            "task_name": self.combo_taskName.currentText(),
+            "element": self.combo_element.currentText(),
+            "particular": self.combo_particular.currentText()
+        }
+    
 
     def toggle_update_source(self, checked):
         # to toggle update source for cycle time validation

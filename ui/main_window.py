@@ -133,7 +133,7 @@ class MainWindow(QMainWindow):
                 font-weight: 600;
                 padding: 12px 16px;
                 border-radius: 8px;
-                transition: background-color 0.2s ease;
+                /*transition: background-color 0.2s ease;*/
             }
 
             /* Item State Changes */
